@@ -258,7 +258,7 @@
                     "rightValue": "/coverletter",
                     "operator": {
                       "type": "string",
-                      "operation": "notEquals"
+                      "operation": "notStartsWith"
                     },
                     "id": "cfa85e23-8929-4422-a8db-f90f63e26af1"
                   }
@@ -330,7 +330,7 @@
                     "rightValue": "/coverletter",
                     "operator": {
                       "type": "string",
-                      "operation": "equals"
+                      "operation": "startsWith"
                     },
                     "id": "e568a147-93ad-4463-a1cc-0022b5e89f87"
                   }
@@ -1193,7 +1193,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const raw = $('Supabase Fetch').item.json.tailored_profile;\nif (!raw) {\n  return [{ json: { success: false, text: \"📭 No optimized profile exists yet.\\n\\nPlease run `/optimize [paste JD here]` first to create a tailored profile before generating a cover letter!\" } }];\n}\nreturn [{ json: { success: true, tailored_profile: typeof raw === 'string' ? JSON.parse(raw) : raw } }];"
+        "jsCode": "const msg = ($('Telegram Trigger').item.json.message && $('Telegram Trigger').item.json.message.text) ? $('Telegram Trigger').item.json.message.text : '';\nconst jdText = msg.replace(/^\\/coverletter\\s*/i, '').trim();\nconst rawTailored = $('Supabase Fetch').item.json.tailored_profile;\nconst rawMaster = $('Supabase Fetch').item.json.master_profile;\nif (jdText) {\n  if (!rawMaster) {\n    return [{ json: { success: false, text: \"📭 No profile found. Please upload your resume PDF first before generating a cover letter!\" } }];\n  }\n  const profile = typeof rawMaster === 'string' ? JSON.parse(rawMaster) : rawMaster;\n  return [{ json: { success: true, profile, jd: jdText, mode: 'jd' } }];\n} else {\n  const raw = rawTailored || rawMaster;\n  if (!raw) {\n    return [{ json: { success: false, text: \"📭 No profile found. Please upload your resume PDF or run /optimize first before generating a cover letter!\" } }];\n  }\n  const profile = typeof raw === 'string' ? JSON.parse(raw) : raw;\n  const mode = rawTailored ? 'tailored' : 'master';\n  return [{ json: { success: true, profile, jd: null, mode } }];\n}"
       },
       "id": "08cf0f47-5dac-49c5-a9e8-043d100d1b60",
       "name": "Check Cover Letter Profile",
@@ -1251,9 +1251,9 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "Please write a professional, highly-tailored cover letter based on the candidate's tailored profile. Focus on the candidate's fit for the target role.\n\nYour response must be a JSON object containing exactly the \"cover_letter\" key with the following structure:\n{\n  \"cover_letter\": {\n    \"subject_role\": \"string - target role name, e.g. UI/UX Designer & AI Tools Specialist\",\n    \"recipient\": \"string - e.g. Hiring Manager\",\n    \"paragraph_1\": \"string - introduction paragraph (3-4 sentences)\",\n    \"paragraph_2\": \"string - second paragraph highlighting key experiences (3-4 sentences)\",\n    \"bullet_points\": [\n      {\n        \"title\": \"string - brief highlight category (e.g., Full-Stack Development)\",\n        \"detail\": \"string - 1-2 sentence detailed accomplishment\"\n      }\n    ],\n    \"paragraph_3\": \"string - concluding paragraph and call to action\"\n  }\n}\n\nDo not include any explanation, markdown formatting, or backticks outside the JSON. Return only the raw JSON.",
+        "text": "Please write a professional, highly-tailored cover letter based on the candidate's profile. Focus on the candidate's fit for the target role.\n\nYour response must be a JSON object containing exactly the \"cover_letter\" key with the following structure:\n{\n  \"cover_letter\": {\n    \"subject_role\": \"string - target role name, e.g. UI/UX Designer & AI Tools Specialist\",\n    \"recipient\": \"string - e.g. Hiring Manager\",\n    \"paragraph_1\": \"string - introduction paragraph (3-4 sentences)\",\n    \"paragraph_2\": \"string - second paragraph highlighting key experiences (3-4 sentences)\",\n    \"bullet_points\": [\n      {\n        \"title\": \"string - brief highlight category (e.g., Full-Stack Development)\",\n        \"detail\": \"string - 1-2 sentence detailed accomplishment\"\n      }\n    ],\n    \"paragraph_3\": \"string - concluding paragraph and call to action\"\n  }\n}\n\nDo not include any explanation, markdown formatting, or backticks outside the JSON. Return only the raw JSON.",
         "options": {
-          "systemMessage": "={{ \"You are a professional cover letter writer. Here is the candidate's tailored profile: \" + JSON.stringify($('Check Cover Letter Profile').item.json.tailored_profile) }}"
+          "systemMessage": "={{ \"You are a professional cover letter writer. Here is the candidate's profile: \" + JSON.stringify($('Check Cover Letter Profile').item.json.profile) + ($('Check Cover Letter Profile').item.json.jd ? \"\\n\\nTarget Job Description:\\n\" + $('Check Cover Letter Profile').item.json.jd : '') }}"
         }
       },
       "id": "67d1760f-0b97-4e75-a81b-81bb9852a7f8",

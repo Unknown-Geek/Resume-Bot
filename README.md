@@ -44,7 +44,7 @@ View your full profile in formatted text directly in the Telegram chat before ex
 | `/optimize [job description]` | Analyze the JD and generate a tailored profile |
 | `/viewOptimized` | Show your current tailored profile as formatted text |
 | `/downloadOptimized` | Compile and download your tailored resume as a PDF |
-| `/coverletter` | Generate and download a tailored cover letter PDF |
+| `/coverletter` | Generate a cover letter PDF. Optionally append a job description: `/coverletter [paste JD]` |
 
 Any other message (including a PDF upload) is treated as a conversational update to your profile.
 
@@ -147,6 +147,20 @@ The `master_profile` and `tailored_profile` fields follow this JSON schema:
   ]
 }
 ```
+
+---
+
+## How the Cover Letter Command Works
+
+The `/coverletter` command supports two modes depending on whether a job description is provided.
+
+**Without a JD (`/coverletter`):**
+The bot uses your current `tailored_profile` as the basis for the cover letter. If no tailored profile exists yet (i.e., you have not run `/optimize`), it falls back to your master profile. This is suitable for sending a general application aligned with your existing profile.
+
+**With a JD (`/coverletter [paste full JD here]`):**
+The bot uses your `master_profile` combined with the provided job description. The AI writer receives both the profile and the JD in its context, allowing it to write a cover letter targeted to that specific role without requiring a prior `/optimize` run. This is useful when you want to generate a role-specific cover letter on the fly without saving a tailored profile.
+
+In both modes the output is a compiled PDF sent directly to the chat, using the same LaTeX header as the resume (name, contact info, tagline).
 
 ---
 
