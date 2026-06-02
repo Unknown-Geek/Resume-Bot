@@ -2,7 +2,6 @@
 
 An AI-powered Telegram bot that acts as a personal resume manager. It parses your existing resume, maintains a persistent structured profile in a database, lets you update it through natural conversation, and generates ATS-friendly PDF resumes and cover letters on demand — including tailored versions optimized for specific job descriptions.
 
----
 
 ## Overview
 
@@ -10,14 +9,12 @@ Resume Bot is built as an n8n automation workflow. It connects a Telegram interf
 
 The core idea is that most people maintain a single static resume document. This bot replaces that with a living, structured profile stored in a database. You can update it conversationally, view it at any time, and export it as a professionally formatted PDF. When applying for a specific role, you can provide the job description and the bot will generate a temporarily optimized version of your resume without touching your original data.
 
----
+
 
 ## Workflow
 
 <img width="1307" height="831" alt="image" src="https://github.com/user-attachments/assets/a8746f6d-0278-455a-a47b-8b0a0b084950" />
 
-
----
 
 ## Features
 
@@ -52,7 +49,6 @@ View your full profile in formatted text directly in the Telegram chat before ex
 ### Smart Link Extraction
 The bot utilizes robust Regex to automatically detect naked domains (e.g., `techsprouts.netlify.app`, `github.com`) even if you forget to include the `http://` protocol. It dynamically injects `https://` under the hood before compiling the LaTeX PDF to prevent broken hyper-references, ensuring all contact links, live demos, and GitHub repositories are perfectly clickable.
 
----
 
 ## Commands
 
@@ -69,7 +65,6 @@ The bot utilizes robust Regex to automatically detect naked domains (e.g., `tech
 
 Any other message (including a PDF upload) is treated as a conversational update to your profile. All commands are fully case-insensitive (e.g. `/DownloadOptimized` works identically).
 
----
 
 ## Architecture
 
@@ -117,7 +112,6 @@ The bot performs an upsert pattern: it checks whether a row exists for the user 
 ### LaTeX and PDF Compilation
 Profile data is converted to a LaTeX document using a custom template with precise resume formatting. The `.tex` file is sent to a remote Linux server via SSH, compiled with `pdflatex`, and the resulting PDF is base64-encoded and returned to n8n. The PDF binary is then sent to the user via the Telegram `sendDocument` API.
 
----
 
 ## Data Model
 
@@ -179,7 +173,6 @@ The `master_profile` and `tailored_profile` fields follow this JSON schema:
 }
 ```
 
----
 
 ## How the Cover Letter Command Works
 
@@ -193,7 +186,6 @@ The bot uses your `master_profile` combined with the provided job description. T
 
 In both modes the output is a compiled PDF sent directly to the chat, using the exact same LaTeX header styling as the resume.
 
----
 
 ## Humanizer (Anti-AI Writing Style Rules)
 
@@ -219,7 +211,6 @@ These rules mathematically filter out the primary indicators of LLM-generated te
 ### 5. Genuine Voice & Style
 - **Grounded, Understated Tone**: Banish sycophantic chatbot filler (*"Certainly!"*, *"I hope this helps!"*) and template cover letter openings in favor of a calm, grounded statement of interest.
 
----
 
 ## Prerequisites
 
@@ -231,7 +222,6 @@ Before setting up and importing this workflow, ensure the following are availabl
 - **Ollama** — running locally or on a server accessible from n8n, with the `qwen3-coder:480b` model pulled. Ollama must be accessible via an OpenAI-compatible API endpoint (default: `http://localhost:11434/v1`)
 - **Remote Linux server with pdflatex** — accessible via SSH with password authentication. Must have `texlive-full` or equivalent packages installed, including `latexmk`, `pdflatex`, and all packages used in the template
 
----
 
 ## Setup
 
@@ -316,7 +306,6 @@ n8n automatically registers the webhook with Telegram when the workflow is activ
 - n8n is accessible via HTTPS on a public URL
 - The Telegram Trigger node has the correct bot token credential
 
----
 
 ## Error Handling
 
