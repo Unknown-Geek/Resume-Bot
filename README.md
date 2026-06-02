@@ -24,13 +24,16 @@ You do not need commands to update your profile. Send a plain message like "I ju
 Send `/optimize` followed by a full job description. The bot performs a gap analysis between your master profile and the requirements of the role, rewrites your summary and bullet points to emphasize relevant experience, reorders your skills to prioritize JD-relevant categories, and saves the result as a temporary Tailored Profile. Your master profile is never modified during this process.
 
 ### PDF Export
-Request a PDF at any time. The bot generates a LaTeX document from your profile, compiles it on a remote server via SSH, and sends you the resulting PDF. If compilation fails due to special character escaping issues, the bot automatically invokes a secondary AI agent to fix the LaTeX and retries the compilation.
+Request a PDF at any time. The bot generates a LaTeX document from your profile, compiles it on a remote server via SSH, and sends you the resulting PDF. 
+- **Double Compilation Pass**: The compilation process automatically runs `pdflatex` twice. The first pass generates cross-reference data; the second resolves `hyperref` links, page references, and page numbers correctly.
+- **Auto-Cleanup**: Once the compiled PDF binary is captured, the server immediately cleans up the `.tex`, `.pdf`, `.log`, and `.aux` files from `/tmp` to prevent disk storage accumulation.
 
 ### Cover Letter Generation
 Send `/coverletter` after running `/optimize`. The bot uses your tailored profile to generate a structured, professional cover letter, compiles it as a PDF, and sends it directly to the chat.
 
-### Profile Preview
+### Profile Preview (Segmented Messaging)
 View your full profile in formatted text directly in the Telegram chat before exporting, for both the master and tailored versions.
+- **Smart Button Attachment**: If your profile exceeds Telegram's 4,096-character limit, the preview is safely split into multiple message segments. The bot dynamically tags the final chunk and attaches the "Download PDF" inline keyboard button **only to the last segment**, providing a clean and professional user interface.
 
 ---
 
@@ -39,10 +42,10 @@ View your full profile in formatted text directly in the Telegram chat before ex
 | Command | Description |
 |---|---|
 | `/start` | Display the help menu and command list |
-| `/view` | Show your master profile as formatted text in chat |
+| `/view` | Show your master profile as formatted text in chat (PDF download button at the bottom) |
 | `/download` | Compile and download your master profile as a PDF |
 | `/optimize [job description]` | Analyze the JD and generate a tailored profile |
-| `/viewOptimized` | Show your current tailored profile as formatted text |
+| `/viewOptimized` | Show your current tailored profile as formatted text (PDF download button at the bottom) |
 | `/downloadOptimized` | Compile and download your tailored resume as a PDF |
 | `/coverletter` | Generate a cover letter PDF. Optionally append a job description: `/coverletter [paste JD]` |
 
@@ -57,7 +60,10 @@ The bot is implemented as a single n8n workflow exported as `ResumeBot.json`. Th
 ### Trigger and Routing
 - **Telegram Trigger**: Listens for incoming messages and callback queries (inline button presses).
 - **Supabase Fetch**: On every message, fetches the user's profile row from Supabase using their Telegram chat ID.
-- **Command Router**: A Switch node that inspects the incoming message or callback data and routes execution to the appropriate branch.
+- **Command Router**: A Switch node that inspects the incoming message or callback data and routes execution. 
+  - **Early Evaluation Route**: The router prioritizes `info` (`/start`), `greeting`, and `profileIncomplete` branches *first*.
+  - **Greeting Interceptor**: Standard conversational greetings (e.g., "hi", "hello") are intercepted early and handled with direct friendly responses instead of trigger-heavy profile warnings.
+  - **Sufficiency Gatekeeper**: No command works if the user's master profile is empty. If data is insufficient, the bot prompts the user specifically for the missing details (e.g., education, work history) and suppresses inline keyboard export buttons until a complete master profile is ingested.
 
 ### Profile Branches
 - **PDF Upload Branch**: Detects when a document is attached, extracts PDF text, formats a prompt, and sends it to the AI Agent for parsing.
@@ -70,7 +76,7 @@ All AI inference runs locally via Ollama using the `qwen3-coder:480b` model serv
 
 - **AI Agent** (main): Handles both PDF parsing and conversational updates. Given the current profile and the user's message, it returns a JSON object containing an updated `master_profile` and a natural language `chat_reply`. It uses a windowed buffer memory keyed to the user's chat ID for conversation continuity.
 - **AI JD Agent**: Receives the user's master profile and a job description. Returns a `tailored_profile` with rewritten content and a `chat_reply` summarizing optimizations and skill gaps.
-- **AI Fix LaTeX Agent**: When pdflatex compilation fails, this agent receives the compile log and the original LaTeX source, fixes any errors, and returns corrected LaTeX.
+- **AI Fix LaTeX Agent**: When `pdflatex` compilation fails, this agent receives the compile log and the original LaTeX source, fixes any errors, and returns corrected LaTeX.
 - **AI Cover Letter Agent**: Receives the tailored profile and generates a structured cover letter as a JSON object with distinct paragraphs and bullet points.
 
 ### Database (Supabase)
@@ -271,8 +277,8 @@ The `/optimize` command implements a non-destructive tailoring pattern:
 
 ## Error Handling
 
-- **LaTeX Compilation Failure**: If `pdflatex` returns a non-zero exit code, the workflow captures the compile log and invokes the AI Fix LaTeX Agent to identify and correct the error. The corrected LaTeX is then compiled in a second attempt. If the retry also fails, the user receives an error message.
-- **Missing or Incomplete Profile**: If a user attempts to run commands without a complete master profile, the bot prompts them to upload a resume or provide the next missing section (name, contact, summary, skills, education, work experience, projects).
+- **LaTeX Compilation Failure (Auto-Repair)**: If `pdflatex` returns a non-zero exit code, the workflow captures the compile log and invokes the AI Fix LaTeX Agent to identify and correct the error. The corrected LaTeX is passed to the **`Base64 Encode Fixed LaTeX`** node, which base64-encodes the content to protect it from terminal shell expansion/corruption before being written to the SSH server for a retry compile. If the retry fails, the user is notified.
+- **Missing or Incomplete Profile Gate**: If a user attempts to run commands without a sufficiently populated master profile, the bot intercepts the execution early, prompts them for the missing sections, and suppresses download buttons.
 - **JSON Parse Failures**: AI agent outputs are parsed defensively. If the output cannot be parsed as JSON, a fallback response is returned to the user.
 - **Cover Letter Without Optimization**: If the user requests a cover letter without first running `/optimize`, the bot detects the missing tailored profile and instructs the user to run `/optimize` first.
 
@@ -282,6 +288,6 @@ The `/optimize` command implements a non-destructive tailoring pattern:
 
 - The bot currently supports one active tailored profile per user at a time. Each call to `/optimize` replaces the previous tailored profile.
 - Profile updates via natural conversation use a windowed buffer memory, so the AI retains context across the current session.
-- All PDF compilation happens on the remote SSH server. The compiled PDF files are stored temporarily in `/tmp` and are not cleaned up automatically between sessions (only cover letter files are removed after being read). You may want to add a cron-based cleanup job on the compilation server.
+- **Server Disk Footprint**: All PDF compilation temp files are now automatically cleaned up on the server via `rm -f` inside `Read PDF Base64`, keeping `/tmp` clean.
 - The `qwen3-coder:480b` model is used for all AI tasks. You can substitute a different model by updating the model name in the three Ollama nodes within the workflow.
 - Credential IDs in the exported JSON are instance-specific. After importing into a new n8n instance, all credential references must be re-linked manually.
