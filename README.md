@@ -18,7 +18,7 @@ The core idea is that most people maintain a single static resume document. This
 Drop a PDF into the Telegram chat. The bot extracts the text, passes it to an AI agent, and maps the unstructured content into a structured profile schema. The parsed profile is saved to your Supabase database and becomes your permanent Master Profile.
 
 ### Conversational Profile Updates
-You do not need commands to update your profile. Send a plain message like "I just completed a machine learning course" or "Add my new frontend internship at Acme Corp" and the AI agent will detect the new information, update the relevant fields in your profile, and confirm what changed.
+You do not need commands to update your profile. Send a plain message like "I just completed a machine learning course" or "Add my new frontend internship at Acme Corp" and the AI agent will detect the new information, update the relevant fields in your profile, and confirm what changed. The bot also automatically refreshes your professional summary on every successful update to ensure all facts stay coherent.
 
 ### Conversational Profile Queries
 Ask the bot about your saved profile data at any time. If you want to know what your Semester 1 score was, or whether you have a specific skill listed on your resume, simply ask. The AI agent will query your stored profile and provide a direct answer without modifying your database records.
@@ -26,13 +26,16 @@ Ask the bot about your saved profile data at any time. If you want to know what 
 ### Job Description Optimization
 Send `/optimize` followed by a full job description. The bot performs a gap analysis between your master profile and the requirements of the role, rewrites your summary and bullet points to emphasize relevant experience, reorders your skills to prioritize JD-relevant categories, and saves the result as a temporary Tailored Profile. Your master profile is never modified during this process.
 
+### ATS Keyword Gap Analysis
+Send `/analyze` followed by a full job description. The bot calculates an ATS match percentage and returns a structured gap analysis highlighting missing hard skills, soft skills, keywords, and specific recommendations on how to improve your score. 
+
 ### PDF Export
 Request a PDF at any time. The bot generates a LaTeX document from your profile, compiles it on a remote server via SSH, and sends you the resulting PDF. 
 - **Double Compilation Pass**: The compilation process automatically runs `pdflatex` twice. The first pass generates cross-reference data; the second resolves `hyperref` links, page references, and page numbers correctly.
 - **Auto-Cleanup**: Once the compiled PDF binary is captured, the server immediately cleans up the `.tex`, `.pdf`, `.log`, and `.aux` files from `/tmp` to prevent disk storage accumulation.
 
 ### Cover Letter Generation
-Send `/coverletter` after running `/optimize`. The bot uses your tailored profile to generate a structured, professional cover letter, compiles it as a PDF, and sends it directly to the chat.
+Send `/coverletter` after running `/optimize`. The bot dynamically pulls your tailored profile (including your tailored tagline and header) to generate a structured, professional cover letter, compiles it as a PDF, and sends it directly to the chat.
 
 ### Profile Preview (Segmented Messaging)
 View your full profile in formatted text directly in the Telegram chat before exporting, for both the master and tailored versions.
@@ -51,8 +54,9 @@ View your full profile in formatted text directly in the Telegram chat before ex
 | `/viewOptimized` | Show your current tailored profile as formatted text (PDF download button at the bottom) |
 | `/downloadOptimized` | Compile and download your tailored resume as a PDF |
 | `/coverletter` | Generate a cover letter PDF. Optionally append a job description: `/coverletter [paste JD]` |
+| `/analyze [job description]` | Run an ATS keyword gap analysis against a job description |
 
-Any other message (including a PDF upload) is treated as a conversational update to your profile.
+Any other message (including a PDF upload) is treated as a conversational update to your profile. All commands are fully case-insensitive (e.g. `/DownloadOptimized` works identically).
 
 ---
 
@@ -67,7 +71,7 @@ The bot is implemented as a single n8n workflow exported as `ResumeBot.json`. Th
   2. **Supabase Fetch by Username**: If the user is not found by ID (e.g. they changed accounts/cleared history), it queries the database using their unique Telegram username (`telegram_username`).
   3. **Supabase Fetch (Code Node)**: Merges the results of both searches. If found by username, the Code node returns the old row, ensuring the very first execution has access to their complete profile.
   4. **Check Migration Needed & Supabase Migrate ID**: If found by username but not by ID, a migration is triggered. The bot automatically updates that row's `telegram_id` to the new ID in Supabase. All future fetches will immediately resolve by ID!
-- **Command Router**: A Switch node that inspects the incoming message or callback data and routes execution. 
+- **Command Router (Case-Insensitive)**: A Switch node that inspects the incoming message or callback data and routes execution gracefully regardless of user casing.
   - **Early Evaluation Route**: The router prioritizes `info` (`/start`), `greeting`, and `profileIncomplete` branches *first*.
   - **Greeting Interceptor**: Standard conversational greetings (e.g., "hi", "hello") are intercepted early and handled with direct friendly responses instead of trigger-heavy profile warnings.
   - **Sufficiency Gatekeeper**: No command works if the user's master profile is empty. If data is insufficient, the bot prompts the user specifically for the missing details (e.g., education, work history) and suppresses inline keyboard export buttons until a complete master profile is ingested.
@@ -75,14 +79,15 @@ The bot is implemented as a single n8n workflow exported as `ResumeBot.json`. Th
 ### Profile Branches
 - **PDF Upload Branch**: Detects when a document is attached, extracts PDF text, formats a prompt, and sends it to the AI Agent for parsing.
 - **Chat Branch**: Handles all plain text messages. Sends them directly to the AI Agent for conversational profile updating.
-- **Info Branch**: Returns the help message with the command menu.
+- **Info Branch**: Returns the help message with an interactive inline command menu.
 - **View Branch**: Formats and returns the master profile as Telegram-formatted text.
 
 ### AI Agents (Ollama)
 All AI inference runs locally via Ollama using the `qwen3-coder:480b` model served through an OpenAI-compatible API endpoint.
 
-- **AI Agent** (main): Handles both PDF parsing and conversational updates. Given the current profile and the user's message, it returns a JSON object containing an updated `master_profile` and a natural language `chat_reply`. It uses a windowed buffer memory keyed to the user's chat ID for conversation continuity.
+- **AI Agent** (main): Handles both PDF parsing and conversational updates. Given the current profile and the user's message, it returns a JSON object containing an updated `master_profile` and a natural language `chat_reply`.
 - **AI JD Agent**: Receives the user's master profile and a job description. Returns a `tailored_profile` with rewritten content and a `chat_reply` summarizing optimizations and skill gaps.
+- **ATS Gap Agent**: Analyzes a job description against the master profile to output a plain-text breakdown of missing hard/soft skills and actionable recommendations.
 - **AI Fix LaTeX Agent**: When `pdflatex` compilation fails, this agent receives the compile log and the original LaTeX source, fixes any errors, and returns corrected LaTeX.
 - **AI Cover Letter Agent**: Receives the tailored profile and generates a structured cover letter as a JSON object with distinct paragraphs and bullet points.
 
@@ -97,8 +102,6 @@ The bot performs an upsert pattern: it checks whether a row exists for the user 
 
 ### LaTeX and PDF Compilation
 Profile data is converted to a LaTeX document using a custom template with precise resume formatting. The `.tex` file is sent to a remote Linux server via SSH, compiled with `pdflatex`, and the resulting PDF is base64-encoded and returned to n8n. The PDF binary is then sent to the user via the Telegram `sendDocument` API.
-
-The resume template uses standard LaTeX packages (`tabularx`, `enumitem`, `hyperref`, `tcolorbox`, `titlesec`) and defines custom commands for consistent section and entry formatting.
 
 ---
 
@@ -169,18 +172,18 @@ The `master_profile` and `tailored_profile` fields follow this JSON schema:
 The `/coverletter` command supports two modes depending on whether a job description is provided.
 
 **Without a JD (`/coverletter`):**
-The bot uses your current `tailored_profile` as the basis for the cover letter. If no tailored profile exists yet (i.e., you have not run `/optimize`), it falls back to your master profile. This is suitable for sending a general application aligned with your existing profile.
+The bot dynamically builds the LaTeX cover letter using your current `tailored_profile` (including pulling the optimized tagline for the header). If no tailored profile exists yet, it falls back to your master profile. This is suitable for sending a general application aligned with your existing profile.
 
 **With a JD (`/coverletter [paste full JD here]`):**
-The bot uses your `master_profile` combined with the provided job description. The AI writer receives both the profile and the JD in its context, allowing it to write a cover letter targeted to that specific role without requiring a prior `/optimize` run. This is useful when you want to generate a role-specific cover letter on the fly without saving a tailored profile.
+The bot uses your `master_profile` combined with the provided job description. The AI writer receives both the profile and the JD in its context, allowing it to write a cover letter targeted to that specific role without requiring a prior `/optimize` run. 
 
-In both modes the output is a compiled PDF sent directly to the chat, using the same LaTeX header as the resume (name, contact info, tagline).
+In both modes the output is a compiled PDF sent directly to the chat, using the exact same LaTeX header styling as the resume.
 
 ---
 
 ## Humanizer (Anti-AI Writing Style Rules)
 
-To prevent generated resumes, profile summaries, experience descriptions, and cover letters from sounding artificial, formulaic, or obviously machine-generated, the generative LLM agents adhere to strict **Humanizer Constraints** modeled on Wikipedia's *WikiProject AI Cleanup* guidelines. 
+To prevent generated resumes, profile summaries, experience descriptions, and cover letters from sounding artificial, formulaic, or obviously machine-generated, all generative LLM agents adhere to strict **Humanizer Constraints**. Additionally, emojis are globally banned across all LLM-generated profile content and chat replies.
 
 These rules mathematically filter out the primary indicators of LLM-generated text:
 
@@ -188,19 +191,19 @@ These rules mathematically filter out the primary indicators of LLM-generated te
 - **Em Dash & Double Hyphen Removal**: The agents are strictly prohibited from generating em dashes (`—`), en dashes (`–`), or double hyphens (`--`/`---`) within text blocks. They must structure sentences naturally using standard periods, commas, colons, or parentheses.
 
 ### 2. Copula Restoration (Avoiding AI Verb Stretches)
-- **Use Simple Copulas**: The model is forbidden from using complex LLM verb replacements like *"serves as"*, *"stands as"*, *"boasts"*, *"features"*, *"offers"*, or *"marks"*. Instead, simple, direct verbs like *"is"*, *"are"*, *"has"*, or direct action verbs must be used (e.g. replacing *"stands as a leading engineer"* with *"is a leading engineer"*).
+- **Use Simple Copulas**: The model is forbidden from using complex LLM verb replacements like *"serves as"*, *"stands as"*, *"boasts"*, *"features"*, *"offers"*, or *"marks"*. Instead, simple, direct verbs like *"is"*, *"are"*, *"has"*, or direct action verbs must be used.
 
 ### 3. AI-Code Vocabulary Blacklist
 - The agents cannot use typical high-frequency AI buzzwords, including: *delve, testament, beacon, synergy, seamless, cutting-edge, revolutionary, leverage, leveraging, transformative, meticulously, expertly, proven track record, elevate, tapestry, foster, multifaceted, catalyst, passionate, dynamically, align with, crucial, enduring, enhance, garner, highlight (verb), interplay, intricate, intricacies, key (adjective), landscape (abstract), pivotal, showcase, underscore.*
 
 ### 4. Grammar and Structure Refinement
-- **No Present Participle Padding**: The model cannot tack on superficial present-participle `"-ing"` endings (e.g. *"...highlighting their expertise"*, *"...ensuring client success"*) simply to pad bullet points.
-- **Rule of Three Prevention**: Restricts forcing bullet points or lists into rigid symmetrical groups of three, allowing lists to have natural lengths.
-- **No Negative Parallelisms**: Avoids repetitive *"Not only... but also..."* constructs and clipped tailing negative fragments (*"no guessing"*).
+- **No Present Participle Padding**: The model cannot tack on superficial present-participle `"-ing"` endings (e.g. *"...highlighting their expertise"*) simply to pad bullet points.
+- **Rule of Three Prevention**: Restricts forcing bullet points or lists into rigid symmetrical groups of three.
+- **No Negative Parallelisms**: Avoids repetitive *"Not only... but also..."* constructs.
 - **Active Voice**: Strongly favors direct active voice over passive voice.
 
 ### 5. Genuine Voice & Style
-- **Grounded, Understated Tone**: Banish sycophantic chatbot filler (*"Certainly!"*, *"I hope this helps!"*) and template cover letter openings (*"I am thrilled/excited/delighted to apply..."*) in favor of a calm, grounded statement of interest.
+- **Grounded, Understated Tone**: Banish sycophantic chatbot filler (*"Certainly!"*, *"I hope this helps!"*) and template cover letter openings in favor of a calm, grounded statement of interest.
 
 ---
 
@@ -236,8 +239,6 @@ If you have an existing database, run this migration command to add the username
 ```sql
 ALTER TABLE "Profiles" ADD COLUMN telegram_username TEXT;
 ```
-
-Enable Row Level Security policies as appropriate for your deployment.
 
 ### 2. Set Up Ollama
 
@@ -297,38 +298,15 @@ In your n8n instance, create the following credentials:
 
 ### 6. Configure the Telegram Webhook
 
-n8n automatically registers the webhook with Telegram when the workflow is activated, provided your n8n instance is reachable from the internet. Ensure:
+n8n automatically registers the webhook with Telegram when the workflow is activated. Ensure:
 - n8n is accessible via HTTPS on a public URL
 - The Telegram Trigger node has the correct bot token credential
 
 ---
 
-## How the Optimize Command Works
-
-The `/optimize` command implements a non-destructive tailoring pattern:
-
-1. The user sends `/optimize` followed by the full job description text in a single message.
-2. The bot extracts the JD text, fetches the user's master profile from Supabase, and builds a structured prompt.
-3. The AI JD Agent analyzes the gap between the profile and the JD requirements. It is instructed to never fabricate any data. Specifically, it must copy `name`, `contact`, `education`, and `certifications` fields exactly from the master profile.
-4. It may only rewrite the `summary`, `tagline`, the order of `skills` categories, and the phrasing of `work_experience` and `projects` bullet points.
-5. The resulting tailored profile is saved to the `tailored_profile` column in Supabase, separate from the master profile.
-6. The user can view or download the tailored version. Running `/optimize` again with a different JD will overwrite the previous tailored profile.
-
----
-
 ## Error Handling
 
+- **Early Exit Protections**: If a user issues an optimization or analysis command without a JD attached (or without an active profile), the bot executes *early exit rules* to immediately intercept the request, bypassing the heavy generation nodes to quickly return helpful usage warnings while hiding any inline keyboard action buttons.
 - **LaTeX Compilation Failure (Auto-Repair)**: If `pdflatex` returns a non-zero exit code, the workflow captures the compile log and invokes the AI Fix LaTeX Agent to identify and correct the error. The corrected LaTeX is passed to the **`Base64 Encode Fixed LaTeX`** node, which base64-encodes the content to protect it from terminal shell expansion/corruption before being written to the SSH server for a retry compile. If the retry fails, the user is notified.
-- **Missing or Incomplete Profile Gate**: If a user attempts to run commands without a sufficiently populated master profile, the bot intercepts the execution early, prompts them for the missing sections, and suppresses download buttons.
+- **Missing or Incomplete Profile Gate**: If a user attempts to run commands without a sufficiently populated master profile, the bot intercepts the execution early, prompts them for the missing details, and suppresses download buttons.
 - **JSON Parse Failures**: AI agent outputs are parsed defensively. If the output cannot be parsed as JSON, a fallback response is returned to the user.
-- **Cover Letter Without Optimization**: If the user requests a cover letter without first running `/optimize`, the bot detects the missing tailored profile and instructs the user to run `/optimize` first.
-
----
-
-## Notes
-
-- The bot currently supports one active tailored profile per user at a time. Each call to `/optimize` replaces the previous tailored profile.
-- Profile updates via natural conversation use a windowed buffer memory, so the AI retains context across the current session.
-- **Server Disk Footprint**: All PDF compilation temp files are now automatically cleaned up on the server via `rm -f` inside `Read PDF Base64`, keeping `/tmp` clean.
-- The `qwen3-coder:480b` model is used for all AI tasks. You can substitute a different model by updating the model name in the three Ollama nodes within the workflow.
-- Credential IDs in the exported JSON are instance-specific. After importing into a new n8n instance, all credential references must be re-linked manually.
