@@ -59,6 +59,19 @@
     },
     {
       "parameters": {
+        "jsCode": "const raw = $('Supabase Fetch').item.json.master_profile;\nlet profile = null;\ntry { profile = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch (e) { profile = null; }\n\nconst missing = [];\nconst addMissing = (label) => { if (!missing.includes(label)) missing.push(label); };\nconst hasProfile = profile && typeof profile === 'object';\n\nif (!hasProfile) {\n  addMissing('your resume data');\n} else {\n  if (!profile.name || !String(profile.name).trim()) addMissing('your full name');\n  const contact = profile.contact || {};\n  if (!contact.email && !contact.phone) addMissing('a contact email or phone number');\n  if (!profile.summary || !String(profile.summary).trim()) addMissing('a short professional summary');\n  const hasSkills = Array.isArray(profile.skills) && profile.skills.some((s) => {\n    const items = Array.isArray(s?.items) ? s.items.join(', ') : (s?.items ?? s?.skills);\n    return items && String(items).trim();\n  });\n  if (!hasSkills) addMissing('your key skills');\n  if (!Array.isArray(profile.education) || profile.education.length === 0) addMissing('your education details');\n  if (!Array.isArray(profile.work_experience) || profile.work_experience.length === 0) addMissing('your work experience');\n  if (!Array.isArray(profile.projects) || profile.projects.length === 0) addMissing('your projects');\n}\n\nconst isSufficient = missing.length === 0;\nlet prompt = '';\nif (!isSufficient) {\n  if (!hasProfile) {\n    prompt = '📭 I don\\'t have your profile yet. Please upload your resume PDF or tell me about yourself so I can build it. Let\\'s start with your full name.';\n  } else {\n    prompt = '📝 Your profile isn\\'t complete yet. Please send ' + missing[0] + ' next so I can finish it. You can paste it here or upload your resume PDF.';\n  }\n}\n\nreturn [{ json: { ...$input.item.json, profile_status: { isSufficient, missing, prompt } } }];"
+      },
+      "id": "93c98ced-f1b4-4c98-b6d6-9d3fe88489f7",
+      "name": "Assess Master Profile",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        21552,
+        30960
+      ]
+    },
+    {
+      "parameters": {
         "rules": {
           "values": [
             {
@@ -72,12 +85,21 @@
                 "conditions": [
                   {
                     "leftValue": "={{ $('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.data : $('Telegram Trigger').item.json.message.text }}",
-                    "rightValue": "/info",
+                    "rightValue": "/start",
                     "operator": {
                       "type": "string",
                       "operation": "equals"
                     },
                     "id": "61c14268-c8e4-4205-b298-8bb03e6c349e"
+                  },
+                  {
+                    "leftValue": "={{ $('Assess Master Profile').item.json.profile_status.isSufficient }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    },
+                    "id": "ad813efa-0a1c-4d98-98ff-2f6bcb5240f4"
                   }
                 ],
                 "combinator": "and"
@@ -102,6 +124,15 @@
                       "operation": "equals"
                     },
                     "id": "2f0e7dfa-4ab2-428b-8f2d-fb59f66dc905"
+                  },
+                  {
+                    "leftValue": "={{ $('Assess Master Profile').item.json.profile_status.isSufficient }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    },
+                    "id": "f809e446-61cd-4dc9-8c4d-0ab70cd36388"
                   }
                 ],
                 "combinator": "and"
@@ -126,6 +157,15 @@
                       "operation": "equals"
                     },
                     "id": "9dd827b0-90b7-4068-866c-778a0f9b773a"
+                  },
+                  {
+                    "leftValue": "={{ $('Assess Master Profile').item.json.profile_status.isSufficient }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    },
+                    "id": "d229a0fd-0c5c-460f-a8a2-718a4f0d7607"
                   }
                 ],
                 "combinator": "and"
@@ -150,6 +190,15 @@
                       "operation": "equals"
                     },
                     "id": "390d492d-c55a-475b-80ba-533c11f69ccc"
+                  },
+                  {
+                    "leftValue": "={{ $('Assess Master Profile').item.json.profile_status.isSufficient }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    },
+                    "id": "55fcf488-2778-4e33-a08a-1c3b4b84c2e1"
                   }
                 ],
                 "combinator": "and"
@@ -237,7 +286,7 @@
                   },
                   {
                     "leftValue": "={{ $('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.data : $('Telegram Trigger').item.json.message.text }}",
-                    "rightValue": "/info",
+                    "rightValue": "/start",
                     "operator": {
                       "type": "string",
                       "operation": "notEquals"
@@ -261,6 +310,15 @@
                       "operation": "notStartsWith"
                     },
                     "id": "cfa85e23-8929-4422-a8db-f90f63e26af1"
+                  },
+                  {
+                    "leftValue": "={{ (() => { const msg = $('Telegram Trigger').item.json.message?.text || ''; const text = msg.trim().toLowerCase(); if (!text) return false; const greetings = ['hi', 'hello', 'hey', 'hiya', 'good morning', 'good afternoon', 'good evening']; return greetings.some(g => text === g || text.startsWith(g + ' ')); })() }}",
+                    "rightValue": false,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "false"
+                    },
+                    "id": "4c691f33-d9f0-413c-b584-4536477e1a3d"
                   }
                 ],
                 "combinator": "and"
@@ -285,6 +343,15 @@
                       "operation": "startsWith"
                     },
                     "id": "1c8659fe-12a2-42c3-b3ac-9fa2eb0acae0"
+                  },
+                  {
+                    "leftValue": "={{ $('Assess Master Profile').item.json.profile_status.isSufficient }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    },
+                    "id": "5c351eaa-9558-4c5d-a7c9-7c07c16d62fd"
                   }
                 ],
                 "combinator": "and"
@@ -309,6 +376,15 @@
                       "operation": "true"
                     },
                     "id": "a022defd-3406-4492-b41e-9fd5d998a9b0"
+                  },
+                  {
+                    "leftValue": "={{ $('Assess Master Profile').item.json.profile_status.isSufficient }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    },
+                    "id": "c0f02df8-6613-45db-bbc1-5a4a28e0be07"
                   }
                 ],
                 "combinator": "and"
@@ -333,12 +409,69 @@
                       "operation": "startsWith"
                     },
                     "id": "e568a147-93ad-4463-a1cc-0022b5e89f87"
+                  },
+                  {
+                    "leftValue": "={{ $('Assess Master Profile').item.json.profile_status.isSufficient }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    },
+                    "id": "3a0282d5-67e6-4741-a4f2-cd9760d25cd7"
                   }
                 ],
                 "combinator": "and"
               },
               "renameOutput": true,
               "outputKey": "coverletter"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ (() => { const msg = $('Telegram Trigger').item.json.message?.text || ''; const text = msg.trim().toLowerCase(); if (!text) return false; const greetings = ['hi', 'hello', 'hey', 'hiya', 'good morning', 'good afternoon', 'good evening']; return greetings.some(g => text === g || text.startsWith(g + ' ')); })() }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    },
+                    "id": "918143bf-4a1d-4331-90a8-1aad5f3f830c"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "greeting"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ (() => { const msg = $('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.data : ($('Telegram Trigger').item.json.message?.text || ''); const text = msg.trim(); return !!text && text.startsWith('/') && !$('Assess Master Profile').item.json.profile_status.isSufficient; })() }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    },
+                    "id": "7dd0c85d-cb65-43e0-b225-e1c6266aa5b6"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "profileIncomplete"
             }
           ]
         },
@@ -565,7 +698,7 @@
     },
     {
       "parameters": {
-        "jsCode": "let rawText = $input.item.json.output || \"\";\nlet parsed = {};\ntry {\n  let cleaned = rawText.replace(/```json|```/gi, \"\").trim();\n  const jsonMatch = cleaned.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) cleaned = jsonMatch[0];\n  parsed = JSON.parse(cleaned);\n  if (typeof parsed.profile_updated === \"string\") parsed.profile_updated = parsed.profile_updated.toLowerCase() === \"true\";\n  if (parsed.profile_updated === undefined) parsed.profile_updated = !!parsed.master_profile;\n\n  const existingRow = $(\"Supabase Fetch\").item.json;\n  const isNewUser = !existingRow || !existingRow.telegram_id;\n  const hasProfileData = parsed.master_profile && typeof parsed.master_profile === \"object\" && Object.keys(parsed.master_profile).length > 0;\n  if (isNewUser && hasProfileData) parsed.profile_updated = true;\n} catch (e) {\n  parsed = { chat_reply: \"Sorry, I had trouble parsing that. Could you try again?\", profile_updated: false, master_profile: null };\n}\nreturn [{ json: parsed }];"
+        "jsCode": "let rawText = $input.item.json.output || \"\";\nlet parsed = {};\ntry {\n  let cleaned = rawText.replace(/```json|```/gi, \"\").trim();\n  const jsonMatch = cleaned.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) cleaned = jsonMatch[0];\n  parsed = JSON.parse(cleaned);\n  if (typeof parsed.profile_updated === \"string\") parsed.profile_updated = parsed.profile_updated.toLowerCase() === \"true\";\n  if (parsed.profile_updated === undefined) parsed.profile_updated = !!parsed.master_profile;\n\n  const existingRow = $(\"Supabase Fetch\").item.json;\n  const isNewUser = !existingRow || !existingRow.telegram_id;\n  const hasProfileData = parsed.master_profile && typeof parsed.master_profile === \"object\" && Object.keys(parsed.master_profile).length > 0;\n  if (isNewUser && hasProfileData) parsed.profile_updated = true;\n} catch (e) {\n  parsed = { chat_reply: \"Sorry, I had trouble parsing that. Could you try again?\", profile_updated: false, master_profile: null };\n}\n\nconst buildStatus = (profile) => {\n  const missing = [];\n  const addMissing = (label) => { if (!missing.includes(label)) missing.push(label); };\n  const hasProfile = profile && typeof profile === \"object\";\n\n  if (!hasProfile) {\n    addMissing(\"your resume data\");\n  } else {\n    if (!profile.name || !String(profile.name).trim()) addMissing(\"your full name\");\n    const contact = profile.contact || {};\n    if (!contact.email && !contact.phone) addMissing(\"a contact email or phone number\");\n    if (!profile.summary || !String(profile.summary).trim()) addMissing(\"a short professional summary\");\n    const hasSkills = Array.isArray(profile.skills) && profile.skills.some((s) => {\n      const items = Array.isArray(s?.items) ? s.items.join(\", \") : (s?.items ?? s?.skills);\n      return items && String(items).trim();\n    });\n    if (!hasSkills) addMissing(\"your key skills\");\n    if (!Array.isArray(profile.education) || profile.education.length === 0) addMissing(\"your education details\");\n    if (!Array.isArray(profile.work_experience) || profile.work_experience.length === 0) addMissing(\"your work experience\");\n    if (!Array.isArray(profile.projects) || profile.projects.length === 0) addMissing(\"your projects\");\n  }\n\n  const isSufficient = missing.length === 0;\n  let prompt = \"\";\n  if (!isSufficient) {\n    if (!hasProfile) {\n      prompt = \"📭 I don't have your profile yet. Please upload your resume PDF or tell me about yourself so I can build it. Let's start with your full name.\";\n    } else {\n      prompt = \"📝 Your profile isn't complete yet. Please send \" + missing[0] + \" next so I can finish it. You can paste it here or upload your resume PDF.\";\n    }\n  }\n\n  return { isSufficient, missing, prompt };\n};\n\nconst rawProfile = parsed.master_profile ?? $(\"Supabase Fetch\").item.json.master_profile;\nlet profile = null;\ntry { profile = typeof rawProfile === \"string\" ? JSON.parse(rawProfile) : rawProfile; } catch (e) { profile = null; }\n\nconst profile_status = buildStatus(profile);\nparsed.profile_status = profile_status;\n\nif (profile_status.prompt) {\n  parsed.chat_reply = parsed.chat_reply ? parsed.chat_reply + \"\\n\\n\" + profile_status.prompt : profile_status.prompt;\n}\n\nreturn [{ json: parsed }];"
       },
       "id": "0e4fffcf-464b-4e16-b38a-79d325cbc060",
       "name": "Parse JSON",
@@ -976,7 +1109,7 @@
     {
       "parameters": {
         "chatId": "={{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}",
-        "text": "=<b>🤖 Welcome to ResumeBot!</b>\n\nI help you store your professional history, update it via natural chat, and generate ATS-friendly PDF resumes tailored to specific jobs. \n\n<b>✨ How it works:</b>\n\n<b>1. Upload your Resume:</b> Drop your current resume (PDF) into this chat. I’ll parse it and save it as your baseline <i>Master Profile</i>.\n\n<b>2. Chat to Update:</b> You don't need commands to add new information. Just message me naturally—like <i>\"I just learned Python\"</i> or <i>\"Add my new UI/UX internship\"</i>—and I’ll update your database in the background.\n\n<b>3. Target a Job:</b> Send <code>/optimize</code> followed by a job description. I’ll run a gap analysis, ask you about missing skills, and generate a temporary <i>Tailored Profile</i> specifically for that application.\n\n<b>🛠 Command Menu:</b>\n\n<code>/view</code> - Read your permanent master profile.\n<code>/download</code> - Export your master profile as a PDF.\n<code>/optimize</code> <i>[paste JD]</i> - Create a tailored resume for a specific role.\n<code>/viewOptimized</code> - Read your currently tailored resume.\n<code>/downloadOptimized</code> - Export your tailored resume as a PDF.\n<code>/coverletter</code> - Generate a tailored cover letter PDF.\n<code>/info</code> - Show this menu again.\n\n<i><b>Note:</b> Running <code>/optimize</code> only modifies a temporary profile for your current application. Your Master Profile is always preserved.</i>",
+        "text": "=<b>🤖 Welcome to ResumeBot!</b>\n\nI help you store your professional history, update it via natural chat, and generate ATS-friendly PDF resumes tailored to specific jobs. \n\n<b>✨ How it works:</b>\n\n<b>1. Upload your Resume:</b> Drop your current resume (PDF) into this chat. I’ll parse it and save it as your baseline <i>Master Profile</i>.\n\n<b>2. Chat to Update:</b> You don't need commands to add new information. Just message me naturally—like <i>\"I just learned Python\"</i> or <i>\"Add my new UI/UX internship\"</i>—and I’ll update your database in the background.\n\n<b>3. Target a Job:</b> Send <code>/optimize</code> followed by a job description. I’ll run a gap analysis, ask you about missing skills, and generate a temporary <i>Tailored Profile</i> specifically for that application.\n\n<b>🛠 Command Menu:</b>\n\n<code>/view</code> - Read your permanent master profile.\n<code>/download</code> - Export your master profile as a PDF.\n<code>/optimize</code> <i>[paste JD]</i> - Create a tailored resume for a specific role.\n<code>/viewOptimized</code> - Read your currently tailored resume.\n<code>/downloadOptimized</code> - Export your tailored resume as a PDF.\n<code>/coverletter</code> - Generate a tailored cover letter PDF.\n<code>/start</code> - Show this menu again.\n\n<i><b>Note:</b> Running <code>/optimize</code> only modifies a temporary profile for your current application. Your Master Profile is always preserved.</i>",
         "replyMarkup": "inlineKeyboard",
         "inlineKeyboard": {
           "rows": [
@@ -1472,6 +1605,98 @@
           "name": "AI Agent Bot"
         }
       }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $('Parse JSON').item.json.profile_status.isSufficient }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "1b482fcd-2e71-4ecf-90b5-55b8196eb4c2",
+      "name": "Chat Profile Sufficient?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        23840,
+        31040
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}",
+        "text": "={{ $('Parse JSON').item.json.chat_reply }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "24cb4b85-7602-4a5b-923c-f0b0899fc08a",
+      "name": "Telegram Chat Reply (No Buttons)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        24288,
+        31216
+      ],
+      "webhookId": "4c259a21-b8ae-4725-bfd8-fad039f14906",
+      "credentials": {
+        "telegramApi": {
+          "id": "C4WFoCaBCTYvtSS5",
+          "name": "AI Agent Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}",
+        "text": "={{ (() => { const prompt = $('Assess Master Profile').item.json.profile_status.prompt; return prompt ? '👋 Hi! ' + prompt : '👋 Hi! I\\'m ready to help. Type /start to see what I can do.'; })() }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "b2d7b3b2-9a47-4ca6-9a6a-93e7388e9cd0",
+      "name": "Greeting Reply",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        21888,
+        31296
+      ],
+      "webhookId": "4c259a21-b8ae-4725-bfd8-fad039f14906",
+      "credentials": {
+        "telegramApi": {
+          "id": "C4WFoCaBCTYvtSS5",
+          "name": "AI Agent Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}",
+        "text": "={{ $('Assess Master Profile').item.json.profile_status.prompt || '📭 Please upload your resume PDF or tell me about yourself to build your profile.' }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "d2e1e5ab-9de8-40cf-a9b0-cf6a255ea366",
+      "name": "Profile Incomplete Reply",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        21888,
+        31040
+      ],
+      "webhookId": "4c259a21-b8ae-4725-bfd8-fad039f14906",
+      "credentials": {
+        "telegramApi": {
+          "id": "C4WFoCaBCTYvtSS5",
+          "name": "AI Agent Bot"
+        }
+      }
     }
   ],
   "connections": {
@@ -1487,6 +1712,17 @@
       ]
     },
     "Supabase Fetch": {
+      "main": [
+        [
+          {
+            "node": "Assess Master Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assess Master Profile": {
       "main": [
         [
           {
@@ -1558,6 +1794,20 @@
         [
           {
             "node": "Check Cover Letter Profile",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Greeting Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Profile Incomplete Reply",
             "type": "main",
             "index": 0
           }
@@ -1696,7 +1946,7 @@
         ],
         [
           {
-            "node": "Telegram Chat Reply",
+            "node": "Chat Profile Sufficient?",
             "type": "main",
             "index": 0
           }
@@ -1725,7 +1975,7 @@
       "main": [
         [
           {
-            "node": "Telegram Chat Reply",
+            "node": "Chat Profile Sufficient?",
             "type": "main",
             "index": 0
           }
@@ -1736,7 +1986,25 @@
       "main": [
         [
           {
+            "node": "Chat Profile Sufficient?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Profile Sufficient?": {
+      "main": [
+        [
+          {
             "node": "Telegram Chat Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram Chat Reply (No Buttons)",
             "type": "main",
             "index": 0
           }

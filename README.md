@@ -38,7 +38,7 @@ View your full profile in formatted text directly in the Telegram chat before ex
 
 | Command | Description |
 |---|---|
-| `/info` | Display the help menu and command list |
+| `/start` | Display the help menu and command list |
 | `/view` | Show your master profile as formatted text in chat |
 | `/download` | Compile and download your master profile as a PDF |
 | `/optimize [job description]` | Analyze the JD and generate a tailored profile |
@@ -272,7 +272,7 @@ The `/optimize` command implements a non-destructive tailoring pattern:
 ## Error Handling
 
 - **LaTeX Compilation Failure**: If `pdflatex` returns a non-zero exit code, the workflow captures the compile log and invokes the AI Fix LaTeX Agent to identify and correct the error. The corrected LaTeX is then compiled in a second attempt. If the retry also fails, the user receives an error message.
-- **Missing Profile**: If a user attempts to view, download, or optimize without an existing profile, they receive a prompt explaining that they need to upload their resume PDF first.
+- **Missing or Incomplete Profile**: If a user attempts to run commands without a complete master profile, the bot prompts them to upload a resume or provide the next missing section (name, contact, summary, skills, education, work experience, projects).
 - **JSON Parse Failures**: AI agent outputs are parsed defensively. If the output cannot be parsed as JSON, a fallback response is returned to the user.
 - **Cover Letter Without Optimization**: If the user requests a cover letter without first running `/optimize`, the bot detects the missing tailored profile and instructs the user to run `/optimize` first.
 
