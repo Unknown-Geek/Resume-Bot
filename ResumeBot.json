@@ -1094,7 +1094,7 @@
       "parameters": {
         "chatId": "={{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}",
         "text": "={{ '*Resume Optimization Complete*\\n━━━━━━━━━━━━━━━━━━━━\\n\\n' + $('Parse JD JSON').item.json.chat_reply + '' }}",
-        "replyMarkup": "inlineKeyboard",
+        "replyMarkup": "={{ $('Parse JD JSON').item.json.tailored_profile ? 'inlineKeyboard' : 'none' }}",
         "inlineKeyboard": {
           "rows": [
             {
