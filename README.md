@@ -20,6 +20,9 @@ Drop a PDF into the Telegram chat. The bot extracts the text, passes it to an AI
 ### Conversational Profile Updates
 You do not need commands to update your profile. Send a plain message like "I just completed a machine learning course" or "Add my new frontend internship at Acme Corp" and the AI agent will detect the new information, update the relevant fields in your profile, and confirm what changed.
 
+### Conversational Profile Queries
+Ask the bot about your saved profile data at any time. If you want to know what your Semester 1 score was, or whether you have a specific skill listed on your resume, simply ask. The AI agent will query your stored profile and provide a direct answer without modifying your database records.
+
 ### Job Description Optimization
 Send `/optimize` followed by a full job description. The bot performs a gap analysis between your master profile and the requirements of the role, rewrites your summary and bullet points to emphasize relevant experience, reorders your skills to prioritize JD-relevant categories, and saves the result as a temporary Tailored Profile. Your master profile is never modified during this process.
 
