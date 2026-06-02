@@ -16,7 +16,7 @@
       "typeVersion": 1.1,
       "position": [
         27008,
-        45712
+        45616
       ],
       "webhookId": "b1af7cf5-ac6a-49ee-b2b3-b16fd40009a3",
       "credentials": {
@@ -47,7 +47,7 @@
       "typeVersion": 1,
       "position": [
         27232,
-        45712
+        45616
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -67,7 +67,7 @@
       "typeVersion": 2,
       "position": [
         28352,
-        45712
+        45616
       ]
     },
     {
@@ -178,72 +178,6 @@
               },
               "renameOutput": true,
               "outputKey": "view"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 1
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.data : $('Telegram Trigger').item.json.message.text }}",
-                    "rightValue": "/download",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    },
-                    "id": "9dd827b0-90b7-4068-866c-778a0f9b773a"
-                  },
-                  {
-                    "leftValue": "={{ $('Assess Master Profile').item.json.profile_status.isSufficient }}",
-                    "rightValue": true,
-                    "operator": {
-                      "type": "boolean",
-                      "operation": "true"
-                    },
-                    "id": "d229a0fd-0c5c-460f-a8a2-718a4f0d7607"
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "download"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 1
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.data : $('Telegram Trigger').item.json.message.text }}",
-                    "rightValue": "/downloadOptimized",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    },
-                    "id": "390d492d-c55a-475b-80ba-533c11f69ccc"
-                  },
-                  {
-                    "leftValue": "={{ $('Assess Master Profile').item.json.profile_status.isSufficient }}",
-                    "rightValue": true,
-                    "operator": {
-                      "type": "boolean",
-                      "operation": "true"
-                    },
-                    "id": "55fcf488-2778-4e33-a08a-1c3b4b84c2e1"
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "downloadOptimized"
             },
             {
               "conditions": {
@@ -376,6 +310,72 @@
                 "conditions": [
                   {
                     "leftValue": "={{ $('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.data : $('Telegram Trigger').item.json.message.text }}",
+                    "rightValue": "/download",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "9dd827b0-90b7-4068-866c-778a0f9b773a"
+                  },
+                  {
+                    "leftValue": "={{ $('Assess Master Profile').item.json.profile_status.isSufficient }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    },
+                    "id": "d229a0fd-0c5c-460f-a8a2-718a4f0d7607"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "download"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.data : $('Telegram Trigger').item.json.message.text }}",
+                    "rightValue": "/downloadOptimized",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "390d492d-c55a-475b-80ba-533c11f69ccc"
+                  },
+                  {
+                    "leftValue": "={{ $('Assess Master Profile').item.json.profile_status.isSufficient }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    },
+                    "id": "55fcf488-2778-4e33-a08a-1c3b4b84c2e1"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "downloadOptimized"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.data : $('Telegram Trigger').item.json.message.text }}",
                     "rightValue": "/optimize",
                     "operator": {
                       "type": "string",
@@ -474,7 +474,7 @@
       "typeVersion": 3,
       "position": [
         28576,
-        45568
+        45472
       ]
     },
     {
@@ -545,7 +545,7 @@
       "typeVersion": 2,
       "position": [
         29152,
-        46112
+        46336
       ]
     },
     {
@@ -558,7 +558,7 @@
       "typeVersion": 1,
       "position": [
         29440,
-        46112
+        46336
       ],
       "credentials": {
         "sshPassword": {
@@ -577,7 +577,7 @@
       "typeVersion": 2,
       "position": [
         31680,
-        46208
+        46432
       ]
     },
     {
@@ -596,7 +596,7 @@
       "typeVersion": 1.1,
       "position": [
         31904,
-        46208
+        46432
       ],
       "webhookId": "d53fcf7a-fa23-465d-a986-390f05874262",
       "credentials": {
@@ -616,7 +616,7 @@
       "typeVersion": 2,
       "position": [
         29440,
-        46416
+        45920
       ]
     },
     {
@@ -630,7 +630,7 @@
       "typeVersion": 1,
       "position": [
         29792,
-        46416
+        45920
       ]
     },
     {
@@ -643,7 +643,7 @@
       "typeVersion": 2,
       "position": [
         30144,
-        46416
+        45920
       ]
     },
     {
@@ -656,7 +656,7 @@
       "typeVersion": 2,
       "position": [
         30144,
-        45536
+        45648
       ]
     },
     {
@@ -664,7 +664,7 @@
         "promptType": "define",
         "text": "={{ $json.promptText }}",
         "options": {
-          "systemMessage": "You are an expert AI Resume assistant. Your job is to extract user information and perfectly structure it for a LaTeX compiler.\n\n[USER CONTEXT FROM DATABASE]\n{{ $('Supabase Fetch').item.json.master_profile ? JSON.stringify($('Supabase Fetch').item.json.master_profile) : 'NO_PROFILE' }}\n\n\n[CRITICAL DATA PRESERVATION & MERGING RULES]\n- The data under `[USER CONTEXT FROM DATABASE]` represents the user's current master profile and is your absolute baseline.\n- **INCREMENTAL MERGING**: When the user chats to update their profile, you MUST only modify, add, or delete the specific fields/facts mentioned in their message. \n- **PRESERVE UNCHANGED DATA**: All other existing fields, bullet points, sections, and values in the `master_profile` that are not explicitly updated or removed by the user's current message MUST be copied and preserved EXACTLY.\n- **NEVER WIPE OUT EXISTING DATA**: If the user corrects a single field (e.g., their name or email), you must update only that specific field in `master_profile` while keeping the rest of their profile (e.g. contact, education, work experience, projects, skills, and certifications) completely intact. Never return a profile that only contains the new information while omitting the old.\n- **CONVERSATIONAL PROFILE QUERIES**: If the user asks a question about their saved profile or resume details (e.g., \"What was my Semester 1 mark?\", \"Did I add Python to my skills?\", \"What is my GPA?\", etc.), you MUST analyze their saved profile under `[USER CONTEXT FROM DATABASE]` to answer their question.\n  - Set `profile_updated` to `false` (since no new information is being added or updated).\n  - In `chat_reply`, provide a clear, direct, and concise answer to their question in a highly natural, human voice.\n  - Return `master_profile` exactly as-is without any modifications.\n  - If the profile is empty or does not contain the requested information, explain politely and clearly what is missing or that the profile has not been created yet.\n\n\n[HUMAN WRITING STYLE & TONE RULES (CRITICAL ANTI-AI CONSTRAINTS)]\nTo ensure all generated resume content (summaries, tagline, bullet points), cover letters, and chat responses look and sound like highly natural, professional, human-written text rather than robotic AI-generated text, you MUST adhere to the following rules:\n\n1. HARD CONSTRAINT ON EM DASHES AND DOUBLE HYPHENS:\n   - Your final output MUST contain absolutely no em dashes (—), en dashes (–), or double hyphens (--, ---) inside text sentences.\n   - Replace each one using a period (to start a new sentence), a comma (for tight asides), a colon (introducing explanation), or parentheses (for true asides), or restructure the sentence entirely.\n\n2. COPULA AVOIDANCE (USE SIMPLE \"IS/ARE/HAS/HAVE\"):\n   - Do not replace simple copulas with elaborate constructions like \"serves as\", \"stands as\", \"boasts\", \"features\", \"offers\", or \"marks\".\n   - Use simple verbs like \"is\", \"are\", \"has\", \"have\", or direct active verbs (e.g., instead of \"boasts 5 years of experience\", write \"has 5 years of experience\").\n\n3. BANNED \"AI VOCABULARY\" WORDS:\n   - Do not use high-frequency AI words. Banned list: align with, crucial, delve, emphasizing, enduring, enhance, fostering, garner, highlight (verb), interplay, intricate, intricacies, key (adjective), landscape (abstract), pivotal, showcase, tapestry, testament, underscore (verb), valuable, vibrant, seamlessly, cutting-edge, revolutionary, leverage, leveraging, transformative, meticulously, expertly, proven track record, elevate, multifaceted, catalyst, passionate.\n\n4. NO SUPERFICIAL \"-ING\" ENDINGS:\n   - Do not tack present participle clauses onto the end of sentences to pad the length (e.g., avoid: \"...highlighting X\", \"...ensuring Y\", \"...reflecting Z\", \"...fostering W\", \"...encompassing K\"). Write these as independent clauses or separate sentences.\n\n5. AVOID PERSUASIVE AND NOTABILITY PUFFERY:\n   - Do not add artificial statements about legacy, significance, or broader trends (e.g., \"marking a pivotal moment\", \"setting the stage for\", \"indelible mark\", \"testament to\", \"deeply rooted\"). Keep it completely factual, direct, and grounded.\n   - Do not use persuasive tropes like \"At its core\", \"In reality\", \"What really matters is\", \"Fundamentally\".\n\n6. STRUCTURAL RULES (RULE OF THREE, BOLDING, NEGATIVE PARALLELISMS):\n   - Avoid forcing bullet points or lists into rigid groups of three (the \"rule of three\" tell). Let items have natural lengths.\n   - Avoid boldface overuse inside text blocks.\n   - Do not use negative parallelisms like \"Not only... but also...\" or tailing negation fragments (e.g. \"no guessing\"). Write clean, direct active clauses.\n   - Avoid passive voice; use clear, direct active voice.\n\n7. NATURAL VOICE AND SOUL:\n   - Write with a grounded, calm, and understated voice. Avoid overly eager, sycophantic, or enthusiastic chatbot phrases (e.g., do not say \"Great! Here is X\", \"I hope this helps!\", \"Certainly!\").\n   - When writing cover letters, avoid generic, excited introductions. Start directly with a clear, calm statement of interest and alignment with the role.\n\n[CRITICAL INSTRUCTION: STRICT JSON SCHEMA]\nYou MUST output ONLY a raw JSON object and nothing else. The JSON must contain exactly these three keys:\n1. \"chat_reply\": Your friendly natural language response.\n2. \"profile_updated\": boolean. Set TRUE if ANY new info was added, FALSE if no new facts.\n3. \"master_profile\": { name, tagline, contact: { email, phone, linkedin_url, linkedin_display, github_url, github_display, portfolio_url, portfolio_display }, summary, skills: [{category, items}], work_experience: [{ title, company, location, start_date, end_date, bullet_points: [] }], education: [{ degree, institution, score, year }], projects: [{ name, tech_stack, duration, link_url, link_display, bullet_points: [] }], certifications: [{ issuer, name, year }] }"
+          "systemMessage": "You are an expert AI Resume assistant. Your job is to extract user information and perfectly structure it for a LaTeX compiler.\n\n[USER CONTEXT FROM DATABASE]\n{{ $('Supabase Fetch').item.json.master_profile ? (typeof $('Supabase Fetch').item.json.master_profile === 'string' ? JSON.stringify(JSON.parse($('Supabase Fetch').item.json.master_profile), null, 2) : JSON.stringify($('Supabase Fetch').item.json.master_profile, null, 2)) : 'NO_PROFILE' }}\n\n\n[CRITICAL DATA PRESERVATION & MERGING RULES]\n- The data under `[USER CONTEXT FROM DATABASE]` represents the user's current master profile and is your absolute baseline.\n- **INCREMENTAL MERGING**: When the user chats to update their profile, you MUST only modify, add, or delete the specific fields/facts mentioned in their message. \n- **PRESERVE UNCHANGED DATA**: All other existing fields, bullet points, sections, and values in the `master_profile` that are not explicitly updated or removed by the user's current message MUST be copied and preserved EXACTLY.\n- **NEVER WIPE OUT EXISTING DATA**: If the user corrects a single field (e.g., their name or email), you must update only that specific field in `master_profile` while keeping the rest of their profile (e.g. contact, education, work experience, projects, skills, and certifications) completely intact. Never return a profile that only contains the new information while omitting the old.\n- **CONVERSATIONAL PROFILE QUERIES**: If the user asks a question about their saved profile or resume details (e.g., \"What was my Semester 1 mark?\", \"Did I add Python to my skills?\", \"What is my GPA?\", etc.), you MUST analyze their saved profile under `[USER CONTEXT FROM DATABASE]` to answer their question.\n  - Set `profile_updated` to `false` (since no new information is being added or updated).\n  - In `chat_reply`, provide a clear, direct, and concise answer to their question in a highly natural, human voice.\n  - Return `master_profile` exactly as-is without any modifications.\n  - If the profile is empty or does not contain the requested information, explain politely and clearly what is missing or that the profile has not been created yet.\n\n\n[HUMAN WRITING STYLE & TONE RULES (CRITICAL ANTI-AI CONSTRAINTS)]\nTo ensure all generated resume content (summaries, tagline, bullet points), cover letters, and chat responses look and sound like highly natural, professional, human-written text rather than robotic AI-generated text, you MUST adhere to the following rules:\n\n1. HARD CONSTRAINT ON EM DASHES AND DOUBLE HYPHENS:\n   - Your final output MUST contain absolutely no em dashes (—), en dashes (–), or double hyphens (--, ---) inside text sentences.\n   - Replace each one using a period (to start a new sentence), a comma (for tight asides), a colon (introducing explanation), or parentheses (for true asides), or restructure the sentence entirely.\n\n2. COPULA AVOIDANCE (USE SIMPLE \"IS/ARE/HAS/HAVE\"):\n   - Do not replace simple copulas with elaborate constructions like \"serves as\", \"stands as\", \"boasts\", \"features\", \"offers\", or \"marks\".\n   - Use simple verbs like \"is\", \"are\", \"has\", \"have\", or direct active verbs (e.g., instead of \"boasts 5 years of experience\", write \"has 5 years of experience\").\n\n3. BANNED \"AI VOCABULARY\" WORDS:\n   - Do not use high-frequency AI words. Banned list: align with, crucial, delve, emphasizing, enduring, enhance, fostering, garner, highlight (verb), interplay, intricate, intricacies, key (adjective), landscape (abstract), pivotal, showcase, tapestry, testament, underscore (verb), valuable, vibrant, seamlessly, cutting-edge, revolutionary, leverage, leveraging, transformative, meticulously, expertly, proven track record, elevate, multifaceted, catalyst, passionate.\n\n4. NO SUPERFICIAL \"-ING\" ENDINGS:\n   - Do not tack present participle clauses onto the end of sentences to pad the length (e.g., avoid: \"...highlighting X\", \"...ensuring Y\", \"...reflecting Z\", \"...fostering W\", \"...encompassing K\"). Write these as independent clauses or separate sentences.\n\n5. AVOID PERSUASIVE AND NOTABILITY PUFFERY:\n   - Do not add artificial statements about legacy, significance, or broader trends (e.g., \"marking a pivotal moment\", \"setting the stage for\", \"indelible mark\", \"testament to\", \"deeply rooted\"). Keep it completely factual, direct, and grounded.\n   - Do not use persuasive tropes like \"At its core\", \"In reality\", \"What really matters is\", \"Fundamentally\".\n\n6. STRUCTURAL RULES (RULE OF THREE, BOLDING, NEGATIVE PARALLELISMS):\n   - Avoid forcing bullet points or lists into rigid groups of three (the \"rule of three\" tell). Let items have natural lengths.\n   - Avoid boldface overuse inside text blocks.\n   - Do not use negative parallelisms like \"Not only... but also...\" or tailing negation fragments (e.g. \"no guessing\"). Write clean, direct active clauses.\n   - Avoid passive voice; use clear, direct active voice.\n\n7. NATURAL VOICE AND SOUL:\n   - Write with a grounded, calm, and understated voice. Avoid overly eager, sycophantic, or enthusiastic chatbot phrases (e.g., do not say \"Great! Here is X\", \"I hope this helps!\", \"Certainly!\").\n   - When writing cover letters, avoid generic, excited introductions. Start directly with a clear, calm statement of interest and alignment with the role.\n\n[CRITICAL INSTRUCTION: STRICT JSON SCHEMA]\nYou MUST output ONLY a raw JSON object and nothing else. The JSON must contain exactly these three keys:\n1. \"chat_reply\": Your friendly natural language response.\n2. \"profile_updated\": boolean. Set TRUE if ANY new info was added, FALSE if no new facts.\n3. \"master_profile\": { name, tagline, contact: { email, phone, linkedin_url, linkedin_display, github_url, github_display, portfolio_url, portfolio_display }, summary, skills: [{category, items}], work_experience: [{ title, company, location, start_date, end_date, bullet_points: [] }], education: [{ degree, institution, score, year }], projects: [{ name, tech_stack, duration, link_url, link_display, bullet_points: [] }], certifications: [{ issuer, name, year }] }"
         }
       },
       "id": "3478ab36-39e5-4de0-b830-1511d5129540",
@@ -673,7 +673,7 @@
       "typeVersion": 1.6,
       "position": [
         30432,
-        45536
+        45664
       ]
     },
     {
@@ -687,7 +687,7 @@
       "typeVersion": 1.2,
       "position": [
         30576,
-        45760
+        45888
       ]
     },
     {
@@ -700,7 +700,7 @@
       "typeVersion": 2,
       "position": [
         30784,
-        45536
+        45776
       ]
     },
     {
@@ -720,7 +720,7 @@
       "typeVersion": 1,
       "position": [
         31008,
-        45536
+        45776
       ]
     },
     {
@@ -740,7 +740,7 @@
       "typeVersion": 1,
       "position": [
         31232,
-        45472
+        45696
       ]
     },
     {
@@ -775,7 +775,7 @@
       "typeVersion": 1,
       "position": [
         31456,
-        45376
+        45600
       ],
       "credentials": {
         "supabaseApi": {
@@ -810,7 +810,7 @@
       "typeVersion": 1,
       "position": [
         31456,
-        45568
+        45792
       ],
       "credentials": {
         "supabaseApi": {
@@ -856,7 +856,7 @@
       "typeVersion": 1.1,
       "position": [
         31904,
-        45440
+        45680
       ],
       "webhookId": "4c259a21-b8ae-4725-bfd8-fad039f14906",
       "credentials": {
@@ -874,7 +874,7 @@
       "typeVersion": 1,
       "position": [
         31456,
-        46208
+        46432
       ],
       "id": "a56513d0-dde0-428b-8cc7-9f4dcb3d6a59",
       "name": "Read PDF Base64",
@@ -896,7 +896,7 @@
       "typeVersion": 1,
       "position": [
         30448,
-        45760
+        45888
       ],
       "credentials": {
         "openAiApi": {
@@ -915,7 +915,7 @@
       "typeVersion": 2,
       "position": [
         29152,
-        46720
+        46704
       ]
     },
     {
@@ -923,7 +923,7 @@
         "promptType": "define",
         "text": "={{ $json.promptText }}",
         "options": {
-          "systemMessage": "You are an expert AI Resume Optimizer.\n\n[USER'S MASTER PROFILE — THIS IS GROUND TRUTH]\n{{ $('Supabase Fetch').item.json.master_profile ? JSON.stringify($('Supabase Fetch').item.json.master_profile) : 'NO_PROFILE' }}\n\n[STRICT RULES]\n1. NEVER fabricate or invent ANY data. No fake degrees, no fake companies, no fake projects.\n2. COPY these fields EXACTLY from master_profile without ANY changes:\n   - name, contact (all fields), education (all entries), certifications (all entries)\n3. You MAY ONLY modify:\n   - summary: rewrite to target the JD role\n   - tagline: adjust to match the JD role\n   - skills: reorder categories so JD-relevant ones come first. Keep ALL existing items.\n   - work_experience.bullet_points: rephrase to emphasize JD-relevant keywords\n   - projects.bullet_points: rephrase to emphasize JD-relevant keywords\n   - projects order: put most JD-relevant projects first\n4. Every skill category MUST have a non-empty 'items' string. Never leave items blank.\n5. Every work_experience and project MUST keep ALL original bullet_points (rephrase, don't delete).\n\n\n[HUMAN WRITING STYLE & TONE RULES (CRITICAL ANTI-AI CONSTRAINTS)]\nTo ensure all generated resume content (summaries, tagline, bullet points), cover letters, and chat responses look and sound like highly natural, professional, human-written text rather than robotic AI-generated text, you MUST adhere to the following rules:\n\n1. HARD CONSTRAINT ON EM DASHES AND DOUBLE HYPHENS:\n   - Your final output MUST contain absolutely no em dashes (—), en dashes (–), or double hyphens (--, ---) inside text sentences.\n   - Replace each one using a period (to start a new sentence), a comma (for tight asides), a colon (introducing explanation), or parentheses (for true asides), or restructure the sentence entirely.\n\n2. COPULA AVOIDANCE (USE SIMPLE \"IS/ARE/HAS/HAVE\"):\n   - Do not replace simple copulas with elaborate constructions like \"serves as\", \"stands as\", \"boasts\", \"features\", \"offers\", or \"marks\".\n   - Use simple verbs like \"is\", \"are\", \"has\", \"have\", or direct active verbs (e.g., instead of \"boasts 5 years of experience\", write \"has 5 years of experience\").\n\n3. BANNED \"AI VOCABULARY\" WORDS:\n   - Do not use high-frequency AI words. Banned list: align with, crucial, delve, emphasizing, enduring, enhance, fostering, garner, highlight (verb), interplay, intricate, intricacies, key (adjective), landscape (abstract), pivotal, showcase, tapestry, testament, underscore (verb), valuable, vibrant, seamlessly, cutting-edge, revolutionary, leverage, leveraging, transformative, meticulously, expertly, proven track record, elevate, multifaceted, catalyst, passionate.\n\n4. NO SUPERFICIAL \"-ING\" ENDINGS:\n   - Do not tack present participle clauses onto the end of sentences to pad the length (e.g., avoid: \"...highlighting X\", \"...ensuring Y\", \"...reflecting Z\", \"...fostering W\", \"...encompassing K\"). Write these as independent clauses or separate sentences.\n\n5. AVOID PERSUASIVE AND NOTABILITY PUFFERY:\n   - Do not add artificial statements about legacy, significance, or broader trends (e.g., \"marking a pivotal moment\", \"setting the stage for\", \"indelible mark\", \"testament to\", \"deeply rooted\"). Keep it completely factual, direct, and grounded.\n   - Do not use persuasive tropes like \"At its core\", \"In reality\", \"What really matters is\", \"Fundamentally\".\n\n6. STRUCTURAL RULES (RULE OF THREE, BOLDING, NEGATIVE PARALLELISMS):\n   - Avoid forcing bullet points or lists into rigid groups of three (the \"rule of three\" tell). Let items have natural lengths.\n   - Avoid boldface overuse inside text blocks.\n   - Do not use negative parallelisms like \"Not only... but also...\" or tailing negation fragments (e.g. \"no guessing\"). Write clean, direct active clauses.\n   - Avoid passive voice; use clear, direct active voice.\n\n7. NATURAL VOICE AND SOUL:\n   - Write with a grounded, calm, and understated voice. Avoid overly eager, sycophantic, or enthusiastic chatbot phrases (e.g., do not say \"Great! Here is X\", \"I hope this helps!\", \"Certainly!\").\n   - When writing cover letters, avoid generic, excited introductions. Start directly with a clear, calm statement of interest and alignment with the role.\n\n[YOUR TASK]\nThe user will paste a Job Description. You must:\n1. Identify skill gaps between the JD and the master_profile\n2. Construct a tailored_profile by reframing (not fabricating) existing data\n3. In chat_reply, list 2-3 key optimizations you made and any skill gaps found\n\n[OUTPUT FORMAT — RAW JSON ONLY]\n{\n  \"chat_reply\": \"string — gaps found + optimizations made\",\n  \"tailored_profile\": { EXACT same schema as master_profile with all fields populated }\n}"
+          "systemMessage": "You are an expert AI Resume Optimizer.\n\n[USER'S MASTER PROFILE — THIS IS GROUND TRUTH]\n{{ $('Supabase Fetch').item.json.master_profile ? (typeof $('Supabase Fetch').item.json.master_profile === 'string' ? JSON.stringify(JSON.parse($('Supabase Fetch').item.json.master_profile), null, 2) : JSON.stringify($('Supabase Fetch').item.json.master_profile, null, 2)) : 'NO_PROFILE' }}\n\n[STRICT RULES]\n1. NEVER fabricate or invent ANY data. No fake degrees, no fake companies, no fake projects.\n2. COPY these fields EXACTLY from master_profile without ANY changes:\n   - name, contact (all fields), education (all entries), certifications (all entries)\n3. You MAY ONLY modify:\n   - summary: rewrite to target the JD role\n   - tagline: adjust to match the JD role\n   - skills: reorder categories so JD-relevant ones come first. Keep ALL existing items.\n   - work_experience.bullet_points: rephrase to emphasize JD-relevant keywords\n   - projects.bullet_points: rephrase to emphasize JD-relevant keywords\n   - projects order: put most JD-relevant projects first\n4. Every skill category MUST have a non-empty 'items' string. Never leave items blank.\n5. Every work_experience and project MUST keep ALL original bullet_points (rephrase, don't delete).\n\n\n[HUMAN WRITING STYLE & TONE RULES (CRITICAL ANTI-AI CONSTRAINTS)]\nTo ensure all generated resume content (summaries, tagline, bullet points), cover letters, and chat responses look and sound like highly natural, professional, human-written text rather than robotic AI-generated text, you MUST adhere to the following rules:\n\n1. HARD CONSTRAINT ON EM DASHES AND DOUBLE HYPHENS:\n   - Your final output MUST contain absolutely no em dashes (—), en dashes (–), or double hyphens (--, ---) inside text sentences.\n   - Replace each one using a period (to start a new sentence), a comma (for tight asides), a colon (introducing explanation), or parentheses (for true asides), or restructure the sentence entirely.\n\n2. COPULA AVOIDANCE (USE SIMPLE \"IS/ARE/HAS/HAVE\"):\n   - Do not replace simple copulas with elaborate constructions like \"serves as\", \"stands as\", \"boasts\", \"features\", \"offers\", or \"marks\".\n   - Use simple verbs like \"is\", \"are\", \"has\", \"have\", or direct active verbs (e.g., instead of \"boasts 5 years of experience\", write \"has 5 years of experience\").\n\n3. BANNED \"AI VOCABULARY\" WORDS:\n   - Do not use high-frequency AI words. Banned list: align with, crucial, delve, emphasizing, enduring, enhance, fostering, garner, highlight (verb), interplay, intricate, intricacies, key (adjective), landscape (abstract), pivotal, showcase, tapestry, testament, underscore (verb), valuable, vibrant, seamlessly, cutting-edge, revolutionary, leverage, leveraging, transformative, meticulously, expertly, proven track record, elevate, multifaceted, catalyst, passionate.\n\n4. NO SUPERFICIAL \"-ING\" ENDINGS:\n   - Do not tack present participle clauses onto the end of sentences to pad the length (e.g., avoid: \"...highlighting X\", \"...ensuring Y\", \"...reflecting Z\", \"...fostering W\", \"...encompassing K\"). Write these as independent clauses or separate sentences.\n\n5. AVOID PERSUASIVE AND NOTABILITY PUFFERY:\n   - Do not add artificial statements about legacy, significance, or broader trends (e.g., \"marking a pivotal moment\", \"setting the stage for\", \"indelible mark\", \"testament to\", \"deeply rooted\"). Keep it completely factual, direct, and grounded.\n   - Do not use persuasive tropes like \"At its core\", \"In reality\", \"What really matters is\", \"Fundamentally\".\n\n6. STRUCTURAL RULES (RULE OF THREE, BOLDING, NEGATIVE PARALLELISMS):\n   - Avoid forcing bullet points or lists into rigid groups of three (the \"rule of three\" tell). Let items have natural lengths.\n   - Avoid boldface overuse inside text blocks.\n   - Do not use negative parallelisms like \"Not only... but also...\" or tailing negation fragments (e.g. \"no guessing\"). Write clean, direct active clauses.\n   - Avoid passive voice; use clear, direct active voice.\n\n7. NATURAL VOICE AND SOUL:\n   - Write with a grounded, calm, and understated voice. Avoid overly eager, sycophantic, or enthusiastic chatbot phrases (e.g., do not say \"Great! Here is X\", \"I hope this helps!\", \"Certainly!\").\n   - When writing cover letters, avoid generic, excited introductions. Start directly with a clear, calm statement of interest and alignment with the role.\n\n[YOUR TASK]\nThe user will paste a Job Description. You must:\n1. Identify skill gaps between the JD and the master_profile\n2. Construct a tailored_profile by reframing (not fabricating) existing data\n3. In chat_reply, list 2-3 key optimizations you made and any skill gaps found\n\n[OUTPUT FORMAT — RAW JSON ONLY]\n{\n  \"chat_reply\": \"string — gaps found + optimizations made\",\n  \"tailored_profile\": { EXACT same schema as master_profile with all fields populated }\n}"
         }
       },
       "id": "9dded837-82d6-4072-a9f3-2793a7a36a30",
@@ -932,7 +932,7 @@
       "typeVersion": 1.6,
       "position": [
         29376,
-        46608
+        46592
       ]
     },
     {
@@ -946,7 +946,7 @@
       "typeVersion": 1,
       "position": [
         29456,
-        46832
+        46816
       ],
       "credentials": {
         "openAiApi": {
@@ -965,7 +965,7 @@
       "typeVersion": 2,
       "position": [
         29792,
-        46720
+        46704
       ]
     },
     {
@@ -996,7 +996,7 @@
       "typeVersion": 1,
       "position": [
         30144,
-        46720
+        46704
       ],
       "credentials": {
         "supabaseApi": {
@@ -1043,7 +1043,7 @@
       "typeVersion": 1.1,
       "position": [
         30496,
-        46720
+        46704
       ],
       "webhookId": "4c259a21-b8ae-4725-bfd8-fad039f14906",
       "credentials": {
@@ -1063,7 +1063,7 @@
       "typeVersion": 2,
       "position": [
         28864,
-        46912
+        46896
       ]
     },
     {
@@ -1101,7 +1101,7 @@
       "typeVersion": 1.1,
       "position": [
         29152,
-        46912
+        46896
       ],
       "webhookId": "4c259a21-b8ae-4725-bfd8-fad039f14906",
       "credentials": {
@@ -1202,7 +1202,7 @@
       "typeVersion": 1.2,
       "position": [
         29792,
-        45536
+        45648
       ],
       "id": "7dfe832f-3d51-4b0a-b3f1-b272444fb7cc",
       "name": "Send Update Wait Msg",
@@ -1232,7 +1232,7 @@
       "typeVersion": 1,
       "position": [
         29792,
-        46112
+        46336
       ]
     },
     {
@@ -1245,7 +1245,7 @@
       "typeVersion": 2,
       "position": [
         30144,
-        45984
+        46208
       ]
     },
     {
@@ -1262,7 +1262,7 @@
       "typeVersion": 1.6,
       "position": [
         30432,
-        45984
+        46208
       ]
     },
     {
@@ -1276,7 +1276,7 @@
       "typeVersion": 1,
       "position": [
         30512,
-        46208
+        46432
       ],
       "credentials": {
         "openAiApi": {
@@ -1295,7 +1295,7 @@
       "typeVersion": 2,
       "position": [
         30784,
-        45984
+        46208
       ]
     },
     {
@@ -1308,7 +1308,7 @@
       "typeVersion": 1,
       "position": [
         31008,
-        45984
+        46208
       ],
       "credentials": {
         "sshPassword": {
@@ -1335,7 +1335,7 @@
       "typeVersion": 1,
       "position": [
         31232,
-        45984
+        46208
       ]
     },
     {
@@ -1352,7 +1352,7 @@
       "typeVersion": 1.1,
       "position": [
         31456,
-        45856
+        46080
       ],
       "webhookId": "3f3de8d4-fc5e-477e-8a60-49d00e24298e",
       "credentials": {
@@ -1372,7 +1372,7 @@
       "typeVersion": 2,
       "position": [
         28864,
-        47152
+        47136
       ]
     },
     {
@@ -1392,7 +1392,7 @@
       "typeVersion": 1,
       "position": [
         29152,
-        47152
+        47136
       ]
     },
     {
@@ -1409,7 +1409,7 @@
       "typeVersion": 1.1,
       "position": [
         29440,
-        47248
+        47232
       ],
       "webhookId": "284197df-db4f-4a91-9cc0-9ab94f67fc05",
       "credentials": {
@@ -1433,7 +1433,7 @@
       "typeVersion": 1.6,
       "position": [
         29728,
-        47056
+        47040
       ]
     },
     {
@@ -1447,7 +1447,7 @@
       "typeVersion": 1,
       "position": [
         29808,
-        47280
+        47264
       ],
       "credentials": {
         "openAiApi": {
@@ -1466,7 +1466,7 @@
       "typeVersion": 2,
       "position": [
         30144,
-        47056
+        47040
       ]
     },
     {
@@ -1479,7 +1479,7 @@
       "typeVersion": 1,
       "position": [
         30496,
-        47056
+        47040
       ],
       "credentials": {
         "sshPassword": {
@@ -1506,7 +1506,7 @@
       "typeVersion": 1,
       "position": [
         30784,
-        47056
+        47040
       ]
     },
     {
@@ -1523,7 +1523,7 @@
       "typeVersion": 1.1,
       "position": [
         31008,
-        47152
+        47136
       ],
       "webhookId": "681762b9-0696-4eae-8b5c-98d4743d50ce",
       "credentials": {
@@ -1543,7 +1543,7 @@
       "typeVersion": 2,
       "position": [
         31008,
-        46736
+        46816
       ]
     },
     {
@@ -1562,7 +1562,7 @@
       "typeVersion": 1.1,
       "position": [
         31232,
-        46736
+        46816
       ],
       "webhookId": "d53fcf7a-fa23-465d-a986-390f05874262",
       "credentials": {
@@ -1586,7 +1586,7 @@
       "typeVersion": 1.1,
       "position": [
         28864,
-        46112
+        46336
       ],
       "webhookId": "49d82bbe-e7b2-4dad-87fc-d9799487f88a",
       "credentials": {
@@ -1610,7 +1610,7 @@
       "typeVersion": 1.1,
       "position": [
         28864,
-        46720
+        46704
       ],
       "webhookId": "be604e86-7f9a-483f-a54f-c68048a5336c",
       "credentials": {
@@ -1634,7 +1634,7 @@
       "typeVersion": 1.1,
       "position": [
         29440,
-        47056
+        47040
       ],
       "webhookId": "594eca53-6f4d-4c00-9966-363b51ca8642",
       "credentials": {
@@ -1661,7 +1661,7 @@
       "typeVersion": 1,
       "position": [
         31680,
-        45536
+        45776
       ]
     },
     {
@@ -1678,7 +1678,7 @@
       "typeVersion": 1.1,
       "position": [
         31904,
-        45776
+        46016
       ],
       "webhookId": "4c259a21-b8ae-4725-bfd8-fad039f14906",
       "credentials": {
@@ -1757,7 +1757,7 @@
       "typeVersion": 1,
       "position": [
         27456,
-        45712
+        45616
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -1777,7 +1777,7 @@
       "typeVersion": 2,
       "position": [
         27680,
-        45712
+        45616
       ]
     },
     {
@@ -1801,7 +1801,7 @@
       "typeVersion": 1,
       "position": [
         27904,
-        45712
+        45616
       ]
     },
     {
@@ -1832,7 +1832,7 @@
       "typeVersion": 1,
       "position": [
         28128,
-        45792
+        45696
       ],
       "credentials": {
         "supabaseApi": {
@@ -1855,7 +1855,7 @@
       "typeVersion": 1.1,
       "position": [
         29152,
-        46416
+        45920
       ],
       "webhookId": "594eca53-6f4d-4c00-9966-363b51ca8643",
       "credentials": {
@@ -1876,7 +1876,7 @@
       "typeVersion": 1,
       "position": [
         30160,
-        45360
+        45472
       ],
       "credentials": {
         "openAiApi": {
@@ -1899,7 +1899,7 @@
       "typeVersion": 1.6,
       "position": [
         28800,
-        45392
+        45504
       ]
     },
     {
@@ -1912,7 +1912,7 @@
       "typeVersion": 2,
       "position": [
         29152,
-        45392
+        45504
       ]
     },
     {
@@ -1932,7 +1932,7 @@
       "typeVersion": 1,
       "position": [
         29440,
-        45392
+        45504
       ]
     },
     {
@@ -1950,7 +1950,7 @@
       "typeVersion": 1.2,
       "position": [
         29792,
-        45248
+        45344
       ],
       "webhookId": "320a3c2c-185f-4ff2-b47d-ef92625ddc2f",
       "credentials": {
@@ -1965,7 +1965,7 @@
         "promptType": "define",
         "text": "={{ $('Telegram Trigger').item.json.message.text }}",
         "options": {
-          "systemMessage": "You are an expert AI Resume assistant. Your job is to answer the user's question about their professional profile using ONLY their saved master profile context.\n\n[USER CONTEXT FROM DATABASE]\n{{ $('Supabase Fetch').item.json.master_profile ? JSON.stringify($('Supabase Fetch').item.json.master_profile) : 'NO_PROFILE' }}\n\n[STRICT RULES]\n1. Answer the question directly, accurately, and concisely in a professional, human voice.\n2. Do not invent or assume any facts. If the information is not present in the master profile, explain clearly and politely that it is missing.\n\n[HUMAN WRITING STYLE & TONE RULES (CRITICAL ANTI-AI CONSTRAINTS)]\n- Your final output must contain absolutely no em dashes (—), en dashes (–), or double hyphens (--, ---) inside text sentences.\n- Avoid passive voice; use clear, direct active voice."
+          "systemMessage": "You are an expert AI Resume assistant. Your job is to answer the user's question about their professional profile using ONLY their saved master profile context.\n\n[USER CONTEXT FROM DATABASE]\n{{ $('Supabase Fetch').item.json.master_profile ? (typeof $('Supabase Fetch').item.json.master_profile === 'string' ? JSON.stringify(JSON.parse($('Supabase Fetch').item.json.master_profile), null, 2) : JSON.stringify($('Supabase Fetch').item.json.master_profile, null, 2)) : 'NO_PROFILE' }}\n\n[STRICT RULES]\n1. Answer the question directly, accurately, and concisely in a professional, human voice.\n2. Do not invent or assume any facts. If the information is not present in the master profile, explain clearly and politely that it is missing.\n\n[HUMAN WRITING STYLE & TONE RULES (CRITICAL ANTI-AI CONSTRAINTS)]\n- Your final output must contain absolutely no em dashes (—), en dashes (–), or double hyphens (--, ---) inside text sentences.\n- Avoid passive voice; use clear, direct active voice."
         }
       },
       "id": "2c538832-5988-42f9-8ceb-835947e4f899",
@@ -1974,7 +1974,7 @@
       "typeVersion": 1.6,
       "position": [
         30080,
-        45136
+        45248
       ]
     },
     {
@@ -1991,13 +1991,33 @@
       "typeVersion": 1.1,
       "position": [
         30496,
-        45248
+        45344
       ],
       "webhookId": "4c259a21-b8ae-4725-bfd8-fad039f14906",
       "credentials": {
         "telegramApi": {
           "id": "C4WFoCaBCTYvtSS5",
           "name": "AI Agent Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "rnj-1:8b",
+        "options": {}
+      },
+      "id": "500c628f-91aa-4cd6-99bc-36f5f38ab4e9",
+      "name": "Classifier Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        28880,
+        45728
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "ULmeiabvCrdrvhgq",
+          "name": "Ollama API"
         }
       }
     }
@@ -2068,20 +2088,6 @@
         ],
         [
           {
-            "node": "Send Resume Compile Wait Msg",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Send Resume Compile Wait Msg",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
             "node": "Intent Classifier",
             "type": "main",
             "index": 0
@@ -2090,6 +2096,20 @@
         [
           {
             "node": "Send PDF Wait Msg",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Resume Compile Wait Msg",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Resume Compile Wait Msg",
             "type": "main",
             "index": 0
           }
@@ -2708,11 +2728,6 @@
             "node": "Query Agent",
             "type": "ai_languageModel",
             "index": 0
-          },
-          {
-            "node": "Intent Classifier",
-            "type": "ai_languageModel",
-            "index": 0
           }
         ]
       ]
@@ -2774,6 +2789,17 @@
           {
             "node": "Send Query Reply",
             "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classifier Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Intent Classifier",
+            "type": "ai_languageModel",
             "index": 0
           }
         ]
