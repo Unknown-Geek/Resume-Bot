@@ -59,7 +59,11 @@ The bot is implemented as a single n8n workflow exported as `ResumeBot.json`. Th
 
 ### Trigger and Routing
 - **Telegram Trigger**: Listens for incoming messages and callback queries (inline button presses).
-- **Supabase Fetch**: On every message, fetches the user's profile row from Supabase using their Telegram chat ID.
+- **Double-Lookup Fetch**: 
+  1. **Supabase Fetch by ID**: Looks up the profile by the incoming Telegram chat ID (`telegram_id`).
+  2. **Supabase Fetch by Username**: If the user is not found by ID (e.g. they changed accounts/cleared history), it queries the database using their unique Telegram username (`telegram_username`).
+  3. **Supabase Fetch (Code Node)**: Merges the results of both searches. If found by username, the Code node returns the old row, ensuring the very first execution has access to their complete profile.
+  4. **Check Migration Needed & Supabase Migrate ID**: If found by username but not by ID, a migration is triggered. The bot automatically updates that row's `telegram_id` to the new ID in Supabase. All future fetches will immediately resolve by ID!
 - **Command Router**: A Switch node that inspects the incoming message or callback data and routes execution. 
   - **Early Evaluation Route**: The router prioritizes `info` (`/start`), `greeting`, and `profileIncomplete` branches *first*.
   - **Greeting Interceptor**: Standard conversational greetings (e.g., "hi", "hello") are intercepted early and handled with direct friendly responses instead of trigger-heavy profile warnings.
@@ -82,6 +86,7 @@ All AI inference runs locally via Ollama using the `qwen3-coder:480b` model serv
 ### Database (Supabase)
 A Supabase `Profiles` table stores one row per user, keyed by `telegram_id`. Each row holds:
 - `telegram_id`: The user's Telegram chat ID (used as the primary key for lookups)
+- `telegram_username`: The user's unique Telegram username (used as a fallback lookup for account migration)
 - `master_profile`: JSON blob containing the full structured resume profile
 - `tailored_profile`: JSON blob containing the most recent JD-optimized profile
 
@@ -202,7 +207,7 @@ Before setting up and importing this workflow, ensure the following are availabl
 
 - **n8n** (self-hosted or cloud) — version compatible with `typeVersion` 1.x nodes and the LangChain integration nodes
 - **Telegram Bot** — created via BotFather; you will need the bot token
-- **Supabase project** — with a `Profiles` table containing columns: `telegram_id` (text, primary key), `master_profile` (jsonb), `tailored_profile` (jsonb)
+- **Supabase project** — with a `Profiles` table containing columns: `telegram_id` (text, primary key), `telegram_username` (text), `master_profile` (jsonb), `tailored_profile` (jsonb)
 - **Ollama** — running locally or on a server accessible from n8n, with the `qwen3-coder:480b` model pulled. Ollama must be accessible via an OpenAI-compatible API endpoint (default: `http://localhost:11434/v1`)
 - **Remote Linux server with pdflatex** — accessible via SSH with password authentication. Must have `texlive-full` or equivalent packages installed, including `latexmk`, `pdflatex`, and all packages used in the template
 
@@ -217,9 +222,16 @@ Create a new Supabase project and run the following SQL to create the profiles t
 ```sql
 CREATE TABLE "Profiles" (
   telegram_id TEXT PRIMARY KEY,
+  telegram_username TEXT,
   master_profile JSONB,
   tailored_profile JSONB
 );
+```
+
+If you have an existing database, run this migration command to add the username column:
+
+```sql
+ALTER TABLE "Profiles" ADD COLUMN telegram_username TEXT;
 ```
 
 Enable Row Level Security policies as appropriate for your deployment.
