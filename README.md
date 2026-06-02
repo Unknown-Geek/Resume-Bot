@@ -1,4 +1,4 @@
-# Resume Bot
+# ResumeFlow
 
 An AI-powered Telegram bot that acts as a personal resume manager. It parses your existing resume, maintains a persistent structured profile in a database, lets you update it through natural conversation, and generates ATS-friendly PDF resumes and cover letters on demand — including tailored versions optimized for specific job descriptions.
 
@@ -9,6 +9,13 @@ An AI-powered Telegram bot that acts as a personal resume manager. It parses you
 Resume Bot is built as an n8n automation workflow. It connects a Telegram interface to a Supabase database and an Ollama-served large language model, orchestrating a full pipeline from raw resume input to compiled PDF output.
 
 The core idea is that most people maintain a single static resume document. This bot replaces that with a living, structured profile stored in a database. You can update it conversationally, view it at any time, and export it as a professionally formatted PDF. When applying for a specific role, you can provide the job description and the bot will generate a temporarily optimized version of your resume without touching your original data.
+
+---
+
+## Workflow
+
+<img width="1307" height="831" alt="image" src="https://github.com/user-attachments/assets/a8746f6d-0278-455a-a47b-8b0a0b084950" />
+
 
 ---
 
