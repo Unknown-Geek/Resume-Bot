@@ -1867,7 +1867,7 @@
     },
     {
       "parameters": {
-        "model": "ministral-3:8b",
+        "model": "gemma3:27b",
         "options": {}
       },
       "id": "e2a7bd2b-35af-4a4e-b0c5-3356ea372f14",
@@ -2003,7 +2003,7 @@
     },
     {
       "parameters": {
-        "model": "ministral-3:8b",
+        "model": "gemma3:27b",
         "options": {}
       },
       "id": "500c628f-91aa-4cd6-99bc-36f5f38ab4e9",
