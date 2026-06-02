@@ -1963,9 +1963,9 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "text": "={{ $json.userQuestion }}",
         "options": {
-          "systemMessage": "You are an expert AI Resume assistant. Your job is to answer the user's question about their professional profile using ONLY their saved master profile context.\n\n[USER CONTEXT FROM DATABASE]\n{{ $('Supabase Fetch').item.json.master_profile ? (typeof $('Supabase Fetch').item.json.master_profile === 'string' ? JSON.stringify(JSON.parse($('Supabase Fetch').item.json.master_profile), null, 2) : JSON.stringify($('Supabase Fetch').item.json.master_profile, null, 2)) : 'NO_PROFILE' }}\n\n[STRICT RULES]\n1. Answer the question directly, accurately, and concisely in a professional, human voice.\n2. Do not invent or assume any facts. If the information is not present in the master profile, explain clearly and politely that it is missing.\n\n[HUMAN WRITING STYLE & TONE RULES (CRITICAL ANTI-AI CONSTRAINTS)]\n- Your final output must contain absolutely no em dashes (—), en dashes (–), or double hyphens (--, ---) inside text sentences.\n- Avoid passive voice; use clear, direct active voice."
+          "systemMessage": "You are an expert AI Resume assistant. Your job is to answer the user's question about their professional profile using ONLY their saved master profile context.\n\n[USER PROFILE]\n{{ $json.profileContext }}\n\n[STRICT RULES]\n1. Answer the question directly, accurately, and concisely in a professional, human voice.\n2. Do not invent or assume any facts. Use ONLY the data shown above.\n3. If the information is not present in the profile above, say so clearly.\n\n[TONE]\n- Write with a grounded, calm, understated voice.\n- No em dashes, no en dashes, no double hyphens.\n- Use direct active voice."
         }
       },
       "id": "2c538832-5988-42f9-8ceb-835947e4f899",
@@ -1973,8 +1973,8 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.6,
       "position": [
-        30080,
-        45248
+        30400,
+        45344
       ]
     },
     {
@@ -1990,7 +1990,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.1,
       "position": [
-        30496,
+        30720,
         45344
       ],
       "webhookId": "4c259a21-b8ae-4725-bfd8-fad039f14906",
@@ -2020,6 +2020,19 @@
           "name": "Ollama API"
         }
       }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $('Supabase Fetch').item.json.master_profile;\nif (!raw) return [{ json: { profileContext: 'NO PROFILE DATA FOUND. The user has not uploaded a resume yet.', userQuestion: $('Telegram Trigger').item.json.message.text } }];\n\nlet p;\ntry { p = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch(e) { return [{ json: { profileContext: 'ERROR: Could not parse profile data.', userQuestion: $('Telegram Trigger').item.json.message.text } }]; }\n\nlet ctx = '';\n\nif (p.name) ctx += 'Name: ' + p.name + '\\n';\nif (p.tagline) ctx += 'Tagline: ' + p.tagline + '\\n';\n\nif (p.contact) {\n  const c = p.contact;\n  if (c.email) ctx += 'Email: ' + c.email + '\\n';\n  if (c.phone) ctx += 'Phone: ' + c.phone + '\\n';\n  if (c.linkedin_url) ctx += 'LinkedIn: ' + (c.linkedin_display || c.linkedin_url) + '\\n';\n  if (c.github_url) ctx += 'GitHub: ' + (c.github_display || c.github_url) + '\\n';\n  if (c.portfolio_url) ctx += 'Portfolio: ' + (c.portfolio_display || c.portfolio_url) + '\\n';\n}\n\nif (p.summary) ctx += '\\nProfessional Summary: ' + p.summary + '\\n';\n\nif (p.education && p.education.length > 0) {\n  ctx += '\\nEducation:\\n';\n  p.education.forEach(e => {\n    ctx += '  - ' + (e.degree || '') + ' from ' + (e.institution || '');\n    if (e.score) ctx += ', Score: ' + e.score;\n    if (e.year) ctx += ', Year: ' + e.year;\n    ctx += '\\n';\n  });\n}\n\nif (p.work_experience && p.work_experience.length > 0) {\n  ctx += '\\nWork Experience:\\n';\n  p.work_experience.forEach(w => {\n    ctx += '  - ' + (w.title || '') + ' at ' + (w.company || '');\n    if (w.location) ctx += ', ' + w.location;\n    if (w.start_date) ctx += ' (' + w.start_date + ' to ' + (w.end_date || 'Present') + ')';\n    ctx += '\\n';\n    if (w.bullet_points && w.bullet_points.length > 0)\n      w.bullet_points.forEach(b => ctx += '    * ' + b + '\\n');\n  });\n}\n\nif (p.projects && p.projects.length > 0) {\n  ctx += '\\nProjects:\\n';\n  p.projects.forEach(proj => {\n    ctx += '  - ' + (proj.name || '');\n    if (proj.tech_stack) ctx += ' (' + proj.tech_stack + ')';\n    if (proj.duration) ctx += ' [' + proj.duration + ']';\n    ctx += '\\n';\n    if (proj.bullet_points && proj.bullet_points.length > 0)\n      proj.bullet_points.forEach(b => ctx += '    * ' + b + '\\n');\n  });\n}\n\nif (p.skills && p.skills.length > 0) {\n  ctx += '\\nSkills:\\n';\n  p.skills.forEach(s => {\n    const cat = s.category || s.name || 'General';\n    const items = Array.isArray(s.items) ? s.items.join(', ') : (s.items || '');\n    if (items) ctx += '  - ' + cat + ': ' + items + '\\n';\n  });\n}\n\nif (p.certifications && p.certifications.length > 0) {\n  ctx += '\\nCertifications:\\n';\n  p.certifications.forEach(cert => {\n    ctx += '  - ' + (cert.name || '') + ' by ' + (cert.issuer || '');\n    if (cert.year) ctx += ' (' + cert.year + ')';\n    ctx += '\\n';\n  });\n}\n\nreturn [{ json: { profileContext: ctx.trim(), userQuestion: $('Telegram Trigger').item.json.message.text } }];"
+      },
+      "id": "153a0401-0fce-4f24-bd9b-0d98739ef75c",
+      "name": "Format Query Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        30080,
+        45472
+      ]
     }
   ],
   "connections": {
@@ -2776,7 +2789,7 @@
       "main": [
         [
           {
-            "node": "Query Agent",
+            "node": "Format Query Context",
             "type": "main",
             "index": 0
           }
@@ -2800,6 +2813,17 @@
           {
             "node": "Intent Classifier",
             "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Query Context": {
+      "main": [
+        [
+          {
+            "node": "Query Agent",
+            "type": "main",
             "index": 0
           }
         ]
