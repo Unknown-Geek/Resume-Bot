@@ -887,7 +887,7 @@
     },
     {
       "parameters": {
-        "model": "RNJ-1:8B",
+        "model": "QWEN3-CODER:480B",
         "options": {}
       },
       "id": "f2cf2902-d368-4bc1-9444-e383caaeec11",
@@ -937,7 +937,7 @@
     },
     {
       "parameters": {
-        "model": "RNJ-1:8B",
+        "model": "QWEN3-CODER:480B",
         "options": {}
       },
       "id": "7524efbd-fdea-4be7-83d6-d0c50cb63dc6",
@@ -1192,7 +1192,7 @@
     {
       "parameters": {
         "chatId": "={{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}",
-        "text": "={{ (() => {\n  const text = ($('Telegram Trigger').item.json.message?.text || '').trim().toLowerCase();\n  const isQuery = text.includes('?') || \n                  /\\b(what|who|where|when|how|which|show|tell|get|is|does|do|can|did|are|was|were)\\b/.test(text) ||\n                  text.includes('my name') ||\n                  text.includes('my profile') ||\n                  text.includes('my resume') ||\n                  text.includes('my mark') ||\n                  text.includes('my grade') ||\n                  text.includes('my score') ||\n                  text.includes('my gpa');\n  return isQuery \n    ? \"Reviewing your profile details...\" \n    : \"Hang on. I'm updating your profile. This might take a few seconds.\";\n})() }}",
+        "text": "Hang on. I'm updating your profile. This might take a few seconds.",
         "additionalFields": {
           "appendAttribution": false,
           "disable_notification": true
@@ -1201,11 +1201,11 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        33136,
-        40240
+        33450,
+        39850
       ],
       "id": "ed9a8a7d-4075-4712-9160-472c1e2207e1",
-      "name": "Send a text message",
+      "name": "Send Update Wait Msg",
       "webhookId": "320a3c2c-185f-4ff2-b47d-ef92625ddc2e",
       "credentials": {
         "telegramApi": {
@@ -1267,7 +1267,7 @@
     },
     {
       "parameters": {
-        "model": "RNJ-1:8B",
+        "model": "QWEN3-CODER:480B",
         "options": {}
       },
       "id": "3d155c69-e88d-4ce8-87f3-3130cc8a6f53",
@@ -1438,7 +1438,7 @@
     },
     {
       "parameters": {
-        "model": "RNJ-1:8B",
+        "model": "QWEN3-CODER:480B",
         "options": {}
       },
       "id": "f3b716f0-4563-4549-86d3-385fd5d833c8",
@@ -1864,6 +1864,102 @@
           "name": "AI Agent Bot"
         }
       }
+    },
+    {
+      "parameters": {
+        "model": "RNJ-1:8B",
+        "options": {}
+      },
+      "id": "e44b82a2-6ce9-4724-9835-8d371401e1c5",
+      "name": "Classifier Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        32850,
+        39950
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "ULmeiabvCrdrvhgq",
+          "name": "Ollama API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "options": {
+          "systemMessage": "You are an expert intent router. Your job is to classify the user's message into exactly one of two categories:\n- \"QUERY\": The user is asking a question about their saved profile, grades, skills, GPA, projects, or status.\n- \"UPDATE\": The user is providing new facts or trying to update their profile.\n\nExamples:\n- \"what is my name?\" -> QUERY\n- \"what is my semester 1 score?\" -> QUERY\n- \"Did I list Python under my skills?\" -> QUERY\n- \"Who am I?\" -> QUERY\n- \"I just finished a Django course.\" -> UPDATE\n- \"Add my new phone number: 12345\" -> UPDATE\n- \"My new email is hello@test.com\" -> UPDATE\n\nYou MUST output ONLY the word \"QUERY\" or \"UPDATE\" in raw JSON format matching this exact schema:\n{ \"intent\": \"QUERY\" | \"UPDATE\" }"
+        }
+      },
+      "id": "6a6a8cf9-3177-4378-aa9c-4eee183d3f1d",
+      "name": "Intent Classifier",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        32850,
+        39750
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let rawText = $input.item.json.output || \"\";\nlet parsed = {};\ntry {\n  let cleaned = rawText.replace(/```json|```/gi, \"\").trim();\n  const jsonMatch = cleaned.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) cleaned = jsonMatch[0];\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  parsed = { intent: \"UPDATE\" };\n}\nreturn [{ json: parsed }];"
+      },
+      "id": "aed1c6da-947c-4597-bbc8-65f41266aa09",
+      "name": "Parse Intent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        33050,
+        39750
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.intent }}",
+              "value2": "QUERY",
+              "operation": "equal"
+            }
+          ]
+        }
+      },
+      "id": "24c1d7ff-8303-4abe-8308-39007be8dab9",
+      "name": "Is Query Intent?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        33250,
+        39750
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}",
+        "text": "Reviewing your profile details...",
+        "additionalFields": {
+          "appendAttribution": false,
+          "disable_notification": true
+        }
+      },
+      "id": "ed9a8a7d-4075-4712-9160-472c1e2207e3",
+      "name": "Send Query Wait Msg",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        33450,
+        39650
+      ],
+      "webhookId": "320a3c2c-185f-4ff2-b47d-ef92625ddc2f",
+      "credentials": {
+        "telegramApi": {
+          "id": "C4WFoCaBCTYvtSS5",
+          "name": "AI Agent Bot"
+        }
+      }
     }
   ],
   "connections": {
@@ -1946,7 +2042,7 @@
         ],
         [
           {
-            "node": "Send a text message",
+            "node": "Intent Classifier",
             "type": "main",
             "index": 0
           }
@@ -2242,17 +2338,6 @@
         [
           {
             "node": "Telegram JD View Reply",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Send a text message": {
-      "main": [
-        [
-          {
-            "node": "Format Chat Prompt",
             "type": "main",
             "index": 0
           }
@@ -2559,6 +2644,79 @@
         [
           {
             "node": "Reattach Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Update Wait Msg": {
+      "main": [
+        [
+          {
+            "node": "Format Chat Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classifier Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Intent Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intent Classifier": {
+      "main": [
+        [
+          {
+            "node": "Parse Intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Intent": {
+      "main": [
+        [
+          {
+            "node": "Is Query Intent?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Query Intent?": {
+      "main": [
+        [
+          {
+            "node": "Send Query Wait Msg",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Update Wait Msg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Query Wait Msg": {
+      "main": [
+        [
+          {
+            "node": "Format Chat Prompt",
             "type": "main",
             "index": 0
           }
