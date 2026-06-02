@@ -1247,6 +1247,12 @@
                     "additionalFields": {
                       "callback_data": "/coverletter"
                     }
+                  },
+                  {
+                    "text": "Analyze ATS Score",
+                    "additionalFields": {
+                      "callback_data": "/analyze"
+                    }
                   }
                 ]
               }
