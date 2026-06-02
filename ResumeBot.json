@@ -100,9 +100,18 @@
                       "operation": "true"
                     },
                     "id": "ad813efa-0a1c-4d98-98ff-2f6bcb5240f4"
+                  },
+                  {
+                    "leftValue": "={{ $('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.data : $('Telegram Trigger').item.json.message.text }}",
+                    "rightValue": "/info",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "fix09-aaaa-bbbb-cccc-ddddeeee0000"
                   }
                 ],
-                "combinator": "and"
+                "combinator": "or"
               },
               "renameOutput": true,
               "outputKey": "info"
@@ -178,6 +187,48 @@
               },
               "renameOutput": true,
               "outputKey": "view"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ !!$('Telegram Trigger').item.json.message.text }}",
+                    "rightValue": false,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "false"
+                    },
+                    "id": "fix04-aaaa-1111-bbbb-2222ccccdddd"
+                  },
+                  {
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.document ? true : false }}",
+                    "rightValue": false,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "false"
+                    },
+                    "id": "fix04-eeee-3333-ffff-4444aaaabbbb"
+                  },
+                  {
+                    "leftValue": "={{ $('Telegram Trigger').item.json.callback_query ? true : false }}",
+                    "rightValue": false,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "false"
+                    },
+                    "id": "fix04-cccc-5555-dddd-6666eeeeffff"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "mediaGuard"
             },
             {
               "conditions": {
@@ -367,6 +418,15 @@
                       "operation": "true"
                     },
                     "id": "55fcf488-2778-4e33-a08a-1c3b4b84c2e1"
+                  },
+                  {
+                    "leftValue": "={{ $('Supabase Fetch').item.json.tailored_profile ? true : false }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    },
+                    "id": "fix01-aaaa-bbbb-cccc-ddddeeeeeeee"
                   }
                 ],
                 "combinator": "and"
@@ -579,7 +639,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const msg = $('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.data : ($('Telegram Trigger').item.json.message.text || '');\nconst isOptimized = msg.startsWith('/downloadOptimized');\nconst rawTailored = $('Supabase Fetch').item.json.tailored_profile;\nconst rawMaster = $('Supabase Fetch').item.json.master_profile;\nconst rawProfile = isOptimized ? rawTailored : rawMaster;\n\nif (!rawProfile) {\n  return [{\n    json: {\n      text: isOptimized\n        ? \"📭 No optimized resume yet. Use \\`/optimize [paste JD here]\\` to create one!\"\n        : \"📭 No profile found. Please upload your resume PDF first!\"\n    }\n  }];\n}\nconst p = typeof rawProfile === 'string' ? JSON.parse(rawProfile) : rawProfile;\n\nfunction esc(str) {\n  if (!str) return '';\n  return String(str)\n    .replace(/\\\\/g, '\\\\textbackslash{}')\n    .replace(/([&%$#{}])/g, '\\\\$1')\n    .replace(/~/g, '\\\\textasciitilde{}')\n    .replace(/\\^/g, '\\\\textasciicircum{}')\n    .replace(/_/g, '\\\\_');\n}\n\nconst c = p.contact || {};\n\nlet eduBlock = '';\n(p.education || []).forEach(e => {\n  eduBlock += `  ${esc(e.degree)} & ${esc(e.institution)} & ${esc(e.score)} & ${esc(e.year)} \\\\\\\\\\n  \\\\hline\\n`;\n});\n\nlet expBlock = '';\n(p.work_experience || []).forEach(w => {\n  expBlock += `  \\\\resumeSubheading{${esc(w.title)}}{${esc(w.location)}}{${esc(w.company)}}{${esc(w.start_date)} -- ${esc(w.end_date || 'Present')}}\\n`;\n  expBlock += `  \\\\resumeItemListStart\\n`;\n  (w.bullet_points || []).forEach(b => { expBlock += `    \\\\item {${esc(b)}}\\n`; });\n  expBlock += `  \\\\resumeItemListEnd\\n`;\n});\n\nlet projBlock = '';\n(p.projects || []).forEach(proj => {\n  const lTex = proj.link_url ? `\\\\href{${esc(proj.link_url)}}{${esc(proj.link_display || 'Link')}}` : '';\n  projBlock += `  \\\\resumeProject{${esc(proj.name)}}{${esc(proj.tech_stack)}}{${esc(proj.duration)}}{${lTex}}\\n`;\n  projBlock += `  \\\\resumeItemListStart\\n`;\n  (proj.bullet_points || []).forEach(b => { projBlock += `    \\\\item {${esc(b)}}\\n`; });\n  projBlock += `  \\\\resumeItemListEnd\\n`;\n});\n\nlet skillBlock = '';\n(p.skills || []).forEach(s => {\n  let items = '';\n  if (Array.isArray(s.items)) items = s.items.join(', ');\n  else if (typeof s.items === 'string') items = s.items;\n  else if (s.skills) items = Array.isArray(s.skills) ? s.skills.join(', ') : s.skills;\n  if (!items || !items.trim()) return;\n  const cat = s.category || s.name || 'Skills';\n  skillBlock += `  \\\\resumeSubItem{${esc(cat)}}{${esc(items)}}\\n`;\n});\n\nlet certBlock = '';\n(p.certifications || []).forEach(cert => {\n  certBlock += `  \\\\resumePOR{${esc(cert.issuer)}}{${esc(cert.name)}}{${esc(cert.year)}}\\n`;\n});\n\nconst tex = `\\\\documentclass[a4paper,11pt]{article}\n\\\\usepackage{latexsym}\n\\\\usepackage{xcolor}\n\\\\usepackage{float}\n\\\\usepackage{ragged2e}\n\\\\usepackage[empty]{fullpage}\n\\\\usepackage{wrapfig}\n\\\\usepackage{tabularx}\n\\\\usepackage{titlesec}\n\\\\usepackage{geometry}\n\\\\usepackage{marvosym}\n\\\\usepackage{verbatim}\n\\\\usepackage{enumitem}\n\\\\usepackage[hidelinks]{hyperref}\n\\\\usepackage{fancyhdr}\n\\\\usepackage{multicol}\n\\\\usepackage{graphicx}\n\\\\usepackage{cfr-lm}\n\\\\usepackage[T1]{fontenc}\n\\\\setlength{\\\\multicolsep}{0pt}\n\\\\pagestyle{fancy}\n\\\\fancyhf{}\n\\\\fancyfoot{}\n\\\\renewcommand{\\\\headrulewidth}{0pt}\n\\\\renewcommand{\\\\footrulewidth}{0pt}\n\\\\geometry{left=1.4cm, top=0.8cm, right=1.2cm, bottom=1cm}\n\\\\usepackage[most]{tcolorbox}\n\\\\tcbset{frame code={} center title, left=0pt, right=0pt, top=0pt, bottom=0pt, colback=gray!20, colframe=white, width=\\\\dimexpr\\\\textwidth\\\\relax, enlarge left by=-2mm, boxsep=4pt, arc=0pt, outer arc=0pt}\n\\\\urlstyle{same}\n\\\\raggedright\n\\\\setlength{\\\\tabcolsep}{0in}\n\\\\titleformat{\\\\section}{\\\\vspace{-4pt}\\\\scshape\\\\raggedright\\\\large}{}{0em}{}[\\\\color{black}\\\\titlerule \\\\vspace{-7pt}]\n\\\\newcommand{\\\\resumeItem}[2]{\\\\item{\\\\textbf{#1}{: #2 \\\\vspace{-0.5mm}}}}\n\\\\newcommand{\\\\resumePOR}[3]{\\\\vspace{0.5mm}\\\\item\\\\begin{tabular*}{0.97\\\\textwidth}[t]{l@{\\\\extracolsep{\\\\fill}}r}\\\\textbf{#1}: #2 & \\\\textit{\\\\small{#3}}\\\\end{tabular*}\\\\vspace{-2mm}}\n\\\\newcommand{\\\\resumeSubheading}[4]{\\\\vspace{0.5mm}\\\\item\\\\begin{tabular*}{0.98\\\\textwidth}[t]{l@{\\\\extracolsep{\\\\fill}}r}\\\\textbf{#1} & \\\\textit{\\\\footnotesize{#4}} \\\\\\\\ \\\\textit{\\\\footnotesize{#3}} & \\\\footnotesize{#2}\\\\\\\\\\\\end{tabular*}\\\\vspace{-2.4mm}}\n\\\\newcommand{\\\\resumeProject}[4]{\\\\vspace{0.5mm}\\\\item\\\\begin{tabular*}{0.98\\\\textwidth}[t]{l@{\\\\extracolsep{\\\\fill}}r}\\\\textbf{#1} & \\\\textit{\\\\footnotesize{#3}} \\\\\\\\ \\\\footnotesize{\\\\textit{#2}} & \\\\footnotesize{#4}\\\\end{tabular*}\\\\vspace{-2.4mm}}\n\\\\newcommand{\\\\resumeSubItem}[2]{\\\\resumeItem{#1}{#2}\\\\vspace{-4pt}}\n\\\\renewcommand{\\\\labelitemi}{$\\\\vcenter{\\\\hbox{\\\\tiny$\\\\bullet$}}$}\n\\\\newcommand{\\\\resumeSubHeadingListStart}{\\\\begin{itemize}[leftmargin=*,labelsep=0mm]}\n\\\\newcommand{\\\\resumeHeadingSkillStart}{\\\\begin{itemize}[leftmargin=*,itemsep=1.7mm, rightmargin=2ex]}\n\\\\newcommand{\\\\resumeItemListStart}{\\\\begin{justify}\\\\begin{itemize}[leftmargin=3ex, rightmargin=2ex, noitemsep,labelsep=1.2mm,itemsep=0mm]\\\\small}\n\\\\newcommand{\\\\resumeSubHeadingListEnd}{\\\\end{itemize}\\\\vspace{2mm}}\n\\\\newcommand{\\\\resumeHeadingSkillEnd}{\\\\end{itemize}\\\\vspace{-2mm}}\n\\\\newcommand{\\\\resumeItemListEnd}{\\\\end{itemize}\\\\end{justify}\\\\vspace{-2mm}}\n\\\\newcolumntype{L}{>{\\\\raggedright\\\\arraybackslash}X}\n\\\\newcolumntype{R}{>{\\\\raggedleft\\\\arraybackslash}X}\n\\\\newcolumntype{C}{>{\\\\centering\\\\arraybackslash}X}\n\n\\\\begin{document}\n\\\\fontfamily{cmr}\\\\selectfont\n\n\\\\begin{tabular*}{\\\\textwidth}{l@{\\\\extracolsep{\\\\fill}}r}\n  {\\\\LARGE \\\\textbf{${esc(p.name)}}} & \\\\href{mailto:${esc(c.email)}}{${esc(c.email)}} \\\\\\\\\n  \\\\textit{${esc(p.tagline)}} & ${esc(c.phone)} \\\\\\\\\n  \\\\href{${esc(c.linkedin_url)}}{LinkedIn: ${esc(c.linkedin_display)}} & \\\\href{${esc(c.github_url)}}{GitHub: ${esc(c.github_display)}} \\\\\\\\\n  \\\\href{${esc(c.portfolio_url)}}{Portfolio: ${esc(c.portfolio_display)}} & \\\\\\\\\n\\\\end{tabular*}\n\n\\\\section{Profile Summary}\n\\\\vspace{1mm}\n\\\\small{${esc(p.summary)}}\n\\\\vspace{1mm}\n\n\\\\section{Education}\n\\\\setlength{\\\\tabcolsep}{5pt}\n{\\\\small \\\\begin{tabularx}{\\\\linewidth}{|c|C|c|c|}\n  \\\\hline\n  \\\\textbf{Degree/Certificate} & \\\\textbf{Institute/Board} & \\\\textbf{Score} & \\\\textbf{Year}\\\\\\\\\n  \\\\hline\n${eduBlock}\\\\end{tabularx}}\n\\\\vspace{2mm}\n\n\\\\section{Experience}\n\\\\resumeSubHeadingListStart\n${expBlock}\\\\resumeSubHeadingListEnd\n\\\\vspace{-5.5mm}\n\n\\\\section{Projects}\n\\\\resumeSubHeadingListStart\n${projBlock}\\\\resumeSubHeadingListEnd\n\\\\vspace{-5.5mm}\n\n\\\\section{Technical Skills}\n\\\\resumeHeadingSkillStart\n${skillBlock}\\\\resumeHeadingSkillEnd\n\n\\\\section{Certifications}\n\\\\vspace{-0.2mm}\n\\\\resumeSubHeadingListStart\n${certBlock}\\\\resumeSubHeadingListEnd\n\n\\\\end{document}`;\n\nreturn [{\n  json: { success: true, tex_b64: Buffer.from(tex).toString('base64') },\n  binary: {\n    tex_file: {\n      data: Buffer.from(tex).toString('base64'),\n      mimeType: 'application/x-tex',\n      fileName: `resume_${($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id)}.tex`\n    }\n  }\n}];"
+        "jsCode": "const msg = $('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.data : ($('Telegram Trigger').item.json.message.text || '');\nconst isOptimized = msg.startsWith('/downloadOptimized');\nconst rawTailored = $('Supabase Fetch').item.json.tailored_profile;\nconst rawMaster = $('Supabase Fetch').item.json.master_profile;\nconst rawProfile = isOptimized ? rawTailored : rawMaster;\n\nif (!rawProfile) {\n  return [{\n    json: {\n      text: isOptimized\n        ? \"📭 No optimized resume yet. Use \\`/optimize [paste JD here]\\` to create one!\"\n        : \"📭 No profile found. Please upload your resume PDF first!\"\n    }\n  }];\n}\nconst p = typeof rawProfile === 'string' ? JSON.parse(rawProfile) : rawProfile;\n\nfunction esc(str) {\n  if (!str) return '';\n  return String(str)\n    .replace(/\\\\/g, '\\\\textbackslash{}')\n    .replace(/([&%$#{}])/g, '\\\\$1')\n    .replace(/~/g, '\\\\textasciitilde{}')\n    .replace(/\\^/g, '\\\\textasciicircum{}')\n    .replace(/_/g, '\\\\_');\n}\n\nfunction url(str) {\n  if (!str) return '';\n  // Only encode characters that would actually break LaTeX href parsing.\n  // Do NOT apply esc() to URLs — it breaks underscores and # anchors.\n  return String(str).replace(/%/g, '\\\\%').replace(/\\\\/g, '/');\n}\n\n\nconst c = p.contact || {};\n\nlet eduBlock = '';\n(p.education || []).forEach(e => {\n  eduBlock += `  ${esc(e.degree)} & ${esc(e.institution)} & ${esc(e.score)} & ${esc(e.year)} \\\\\\\\\\n  \\\\hline\\n`;\n});\n\nlet expBlock = '';\n(p.work_experience || []).forEach(w => {\n  expBlock += `  \\\\resumeSubheading{${esc(w.title)}}{${esc(w.location)}}{${esc(w.company)}}{${esc(w.start_date)} -- ${esc(w.end_date || 'Present')}}\\n`;\n  expBlock += `  \\\\resumeItemListStart\\n`;\n  (w.bullet_points || []).forEach(b => { expBlock += `    \\\\item {${esc(b)}}\\n`; });\n  expBlock += `  \\\\resumeItemListEnd\\n`;\n});\n\nlet projBlock = '';\n(p.projects || []).forEach(proj => {\n  const lTex = proj.link_url ? `\\\\href{${url(proj.link_url)}}{${esc(proj.link_display || 'Link')}}` : '';\n  projBlock += `  \\\\resumeProject{${esc(proj.name)}}{${esc(proj.tech_stack)}}{${esc(proj.duration)}}{${lTex}}\\n`;\n  projBlock += `  \\\\resumeItemListStart\\n`;\n  (proj.bullet_points || []).forEach(b => { projBlock += `    \\\\item {${esc(b)}}\\n`; });\n  projBlock += `  \\\\resumeItemListEnd\\n`;\n});\n\nlet skillBlock = '';\n(p.skills || []).forEach(s => {\n  let items = '';\n  if (Array.isArray(s.items)) items = s.items.join(', ');\n  else if (typeof s.items === 'string') items = s.items;\n  else if (s.skills) items = Array.isArray(s.skills) ? s.skills.join(', ') : s.skills;\n  if (!items || !items.trim()) return;\n  const cat = s.category || s.name || 'Skills';\n  skillBlock += `  \\\\resumeSubItem{${esc(cat)}}{${esc(items)}}\\n`;\n});\n\nlet certBlock = '';\n(p.certifications || []).forEach(cert => {\n  certBlock += `  \\\\resumePOR{${esc(cert.issuer)}}{${esc(cert.name)}}{${esc(cert.year)}}\\n`;\n});\n\nconst tex = `\\\\documentclass[a4paper,11pt]{article}\n\\\\usepackage{latexsym}\n\\\\usepackage{xcolor}\n\\\\usepackage{float}\n\\\\usepackage{ragged2e}\n\\\\usepackage[empty]{fullpage}\n\\\\usepackage{wrapfig}\n\\\\usepackage{tabularx}\n\\\\usepackage{titlesec}\n\\\\usepackage{geometry}\n\\\\usepackage{marvosym}\n\\\\usepackage{verbatim}\n\\\\usepackage{enumitem}\n\\\\usepackage[hidelinks]{hyperref}\n\\\\usepackage{fancyhdr}\n\\\\usepackage{multicol}\n\\\\usepackage{graphicx}\n\\\\usepackage{cfr-lm}\n\\\\usepackage[T1]{fontenc}\n\\\\setlength{\\\\multicolsep}{0pt}\n\\\\pagestyle{fancy}\n\\\\fancyhf{}\n\\\\fancyfoot{}\n\\\\renewcommand{\\\\headrulewidth}{0pt}\n\\\\renewcommand{\\\\footrulewidth}{0pt}\n\\\\geometry{left=1.4cm, top=0.8cm, right=1.2cm, bottom=1cm}\n\\\\usepackage[most]{tcolorbox}\n\\\\tcbset{frame code={} center title, left=0pt, right=0pt, top=0pt, bottom=0pt, colback=gray!20, colframe=white, width=\\\\dimexpr\\\\textwidth\\\\relax, enlarge left by=-2mm, boxsep=4pt, arc=0pt, outer arc=0pt}\n\\\\urlstyle{same}\n\\\\raggedright\n\\\\setlength{\\\\tabcolsep}{0in}\n\\\\titleformat{\\\\section}{\\\\vspace{-4pt}\\\\scshape\\\\raggedright\\\\large}{}{0em}{}[\\\\color{black}\\\\titlerule \\\\vspace{-7pt}]\n\\\\newcommand{\\\\resumeItem}[2]{\\\\item{\\\\textbf{#1}{: #2 \\\\vspace{-0.5mm}}}}\n\\\\newcommand{\\\\resumePOR}[3]{\\\\vspace{0.5mm}\\\\item\\\\begin{tabular*}{0.97\\\\textwidth}[t]{l@{\\\\extracolsep{\\\\fill}}r}\\\\textbf{#1}: #2 & \\\\textit{\\\\small{#3}}\\\\end{tabular*}\\\\vspace{-2mm}}\n\\\\newcommand{\\\\resumeSubheading}[4]{\\\\vspace{0.5mm}\\\\item\\\\begin{tabular*}{0.98\\\\textwidth}[t]{l@{\\\\extracolsep{\\\\fill}}r}\\\\textbf{#1} & \\\\textit{\\\\footnotesize{#4}} \\\\\\\\ \\\\textit{\\\\footnotesize{#3}} & \\\\footnotesize{#2}\\\\\\\\\\\\end{tabular*}\\\\vspace{-2.4mm}}\n\\\\newcommand{\\\\resumeProject}[4]{\\\\vspace{0.5mm}\\\\item\\\\begin{tabular*}{0.98\\\\textwidth}[t]{l@{\\\\extracolsep{\\\\fill}}r}\\\\textbf{#1} & \\\\textit{\\\\footnotesize{#3}} \\\\\\\\ \\\\footnotesize{\\\\textit{#2}} & \\\\footnotesize{#4}\\\\end{tabular*}\\\\vspace{-2.4mm}}\n\\\\newcommand{\\\\resumeSubItem}[2]{\\\\resumeItem{#1}{#2}\\\\vspace{-4pt}}\n\\\\renewcommand{\\\\labelitemi}{$\\\\vcenter{\\\\hbox{\\\\tiny$\\\\bullet$}}$}\n\\\\newcommand{\\\\resumeSubHeadingListStart}{\\\\begin{itemize}[leftmargin=*,labelsep=0mm]}\n\\\\newcommand{\\\\resumeHeadingSkillStart}{\\\\begin{itemize}[leftmargin=*,itemsep=1.7mm, rightmargin=2ex]}\n\\\\newcommand{\\\\resumeItemListStart}{\\\\begin{justify}\\\\begin{itemize}[leftmargin=3ex, rightmargin=2ex, noitemsep,labelsep=1.2mm,itemsep=0mm]\\\\small}\n\\\\newcommand{\\\\resumeSubHeadingListEnd}{\\\\end{itemize}\\\\vspace{2mm}}\n\\\\newcommand{\\\\resumeHeadingSkillEnd}{\\\\end{itemize}\\\\vspace{-2mm}}\n\\\\newcommand{\\\\resumeItemListEnd}{\\\\end{itemize}\\\\end{justify}\\\\vspace{-2mm}}\n\\\\newcolumntype{L}{>{\\\\raggedright\\\\arraybackslash}X}\n\\\\newcolumntype{R}{>{\\\\raggedleft\\\\arraybackslash}X}\n\\\\newcolumntype{C}{>{\\\\centering\\\\arraybackslash}X}\n\n\\\\begin{document}\n\\\\fontfamily{cmr}\\\\selectfont\n\n\\\\begin{tabular*}{\\\\textwidth}{l@{\\\\extracolsep{\\\\fill}}r}\n  {\\\\LARGE \\\\textbf{${esc(p.name)}}} & \\\\href{mailto:${url(c.email)}}{${esc(c.email)}} \\\\\\\\\n  \\\\textit{${esc(p.tagline)}} & ${esc(c.phone)} \\\\\\\\\n  \\\\href{${url(c.linkedin_url)}}{LinkedIn: ${esc(c.linkedin_display)}} & \\\\href{${url(c.github_url)}}{GitHub: ${esc(c.github_display)}} \\\\\\\\\n  \\\\href{${url(c.portfolio_url)}}{Portfolio: ${esc(c.portfolio_display)}} & \\\\\\\\\n\\\\end{tabular*}\n\n\\\\section{Profile Summary}\n\\\\vspace{1mm}\n\\\\small{${esc(p.summary)}}\n\\\\vspace{1mm}\n\n\\\\section{Education}\n\\\\setlength{\\\\tabcolsep}{5pt}\n{\\\\small \\\\begin{tabularx}{\\\\linewidth}{|c|C|c|c|}\n  \\\\hline\n  \\\\textbf{Degree/Certificate} & \\\\textbf{Institute/Board} & \\\\textbf{Score} & \\\\textbf{Year}\\\\\\\\\n  \\\\hline\n${eduBlock}\\\\end{tabularx}}\n\\\\vspace{2mm}\n\n\\\\section{Experience}\n\\\\resumeSubHeadingListStart\n${expBlock}\\\\resumeSubHeadingListEnd\n\\\\vspace{-5.5mm}\n\n\\\\section{Projects}\n\\\\resumeSubHeadingListStart\n${projBlock}\\\\resumeSubHeadingListEnd\n\\\\vspace{-5.5mm}\n\n\\\\section{Technical Skills}\n\\\\resumeHeadingSkillStart\n${skillBlock}\\\\resumeHeadingSkillEnd\n\n\\\\section{Certifications}\n\\\\vspace{-0.2mm}\n\\\\resumeSubHeadingListStart\n${certBlock}\\\\resumeSubHeadingListEnd\n\n\\\\end{document}`;\n\nreturn [{\n  json: { success: true, tex_b64: Buffer.from(tex).toString('base64') },\n  binary: {\n    tex_file: {\n      data: Buffer.from(tex).toString('base64'),\n      mimeType: 'application/x-tex',\n      fileName: `resume_${($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id)}.tex`\n    }\n  }\n}];"
       },
       "id": "e1531589-89a8-45cc-acb9-7c99f1c010be",
       "name": "Generate LaTeX",
@@ -592,14 +652,14 @@
     },
     {
       "parameters": {
-        "command": "=echo \"{{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}\" > /tmp/chat_{{ $execution.id }}\necho \"{{ $('Generate LaTeX').item.json.tex_b64 }}\" | base64 -d > /tmp/resume_{{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}.tex\ncd /tmp\npdflatex -interaction=nonstopmode resume_{{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}.tex > /tmp/compile_{{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}.log 2>&1\npdflatex -interaction=nonstopmode resume_{{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}.tex >> /tmp/compile_{{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}.log 2>&1\nif [ $? -eq 0 ] && [ -f resume_{{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}.pdf ]; then\n  echo \"SUCCESS\"\nelse\n  echo \"COMPILE_ERROR\"\n  cat /tmp/compile_{{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}.log\nfi"
+        "command": "=echo \"{{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}\" > /tmp/chat_{{ $execution.id }}\necho \"{{ $('Generate LaTeX').item.json.tex_b64 }}\" | base64 -d > /tmp/resume_{{ $execution.id }}.tex\ncd /tmp\npdflatex -interaction=nonstopmode resume_{{ $execution.id }}.tex > /tmp/compile_{{ $execution.id }}.log 2>&1\npdflatex -interaction=nonstopmode resume_{{ $execution.id }}.tex >> /tmp/compile_{{ $execution.id }}.log 2>&1\nif [ $? -eq 0 ] && [ -f resume_{{ $execution.id }}.pdf ]; then\n  echo \"SUCCESS\"\nelse\n  echo \"COMPILE_ERROR\"\n  cat /tmp/compile_{{ $execution.id }}.log\nfi"
       },
       "id": "90543f7f-bd8a-445c-be0d-71c92a6ef621",
       "name": "Write LaTeX File",
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
       "position": [
-        29440,
+        29584,
         46336
       ],
       "credentials": {
@@ -734,7 +794,7 @@
     },
     {
       "parameters": {
-        "jsCode": "let rawText = $input.item.json.output || \"\";\nlet parsed = {};\ntry {\n  let cleaned = rawText.replace(/```json|```/gi, \"\").trim();\n  const jsonMatch = cleaned.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) cleaned = jsonMatch[0];\n  parsed = JSON.parse(cleaned);\n  if (typeof parsed.profile_updated === \"string\") parsed.profile_updated = parsed.profile_updated.toLowerCase() === \"true\";\n  if (parsed.profile_updated === undefined) parsed.profile_updated = !!parsed.master_profile;\n\n  const existingRow = $(\"Supabase Fetch\").item.json;\n  const isNewUser = !existingRow || !existingRow.telegram_id;\n  const hasProfileData = parsed.master_profile && typeof parsed.master_profile === \"object\" && Object.keys(parsed.master_profile).length > 0;\n  if (isNewUser && hasProfileData) parsed.profile_updated = true;\n} catch (e) {\n  parsed = { chat_reply: \"Sorry, I had trouble parsing that. Could you try again?\", profile_updated: false, master_profile: null };\n}\n\nconst buildStatus = (profile) => {\n  const missing = [];\n  const addMissing = (label) => { if (!missing.includes(label)) missing.push(label); };\n  const hasProfile = profile && typeof profile === \"object\";\n\n  if (!hasProfile) {\n    addMissing(\"your resume data\");\n  } else {\n    if (!profile.name || !String(profile.name).trim()) addMissing(\"your full name\");\n    const contact = profile.contact || {};\n    if (!contact.email && !contact.phone) addMissing(\"a contact email or phone number\");\n    if (!profile.summary || !String(profile.summary).trim()) addMissing(\"a short professional summary\");\n    const hasSkills = Array.isArray(profile.skills) && profile.skills.some((s) => {\n      const items = Array.isArray(s?.items) ? s.items.join(\", \") : (s?.items ?? s?.skills);\n      return items && String(items).trim();\n    });\n    if (!hasSkills) addMissing(\"your key skills\");\n    if (!Array.isArray(profile.education) || profile.education.length === 0) addMissing(\"your education details\");\n    if (!Array.isArray(profile.work_experience) || profile.work_experience.length === 0) addMissing(\"your work experience\");\n    if (!Array.isArray(profile.projects) || profile.projects.length === 0) addMissing(\"your projects\");\n  }\n\n  const isSufficient = missing.length === 0;\n  let prompt = \"\";\n  if (!isSufficient) {\n    if (!hasProfile) {\n      prompt = \"Your profile is currently empty. Please upload your resume PDF or send your professional details (starting with your full name) to establish your baseline profile.\";\n    } else {\n      prompt = \"Your profile is incomplete. Please provide your \" + missing[0] + \" next to complete your profile. You can paste the text here or upload your resume PDF.\";\n    }\n  }\n\n  return { isSufficient, missing, prompt };\n};\n\nconst rawProfile = parsed.master_profile ?? $(\"Supabase Fetch\").item.json.master_profile;\nlet profile = null;\ntry { profile = typeof rawProfile === \"string\" ? JSON.parse(rawProfile) : rawProfile; } catch (e) { profile = null; }\n\nconst profile_status = buildStatus(profile);\nparsed.profile_status = profile_status;\n\nif (profile_status.prompt) {\n  parsed.chat_reply = parsed.chat_reply ? parsed.chat_reply + \"\\n\\n\" + profile_status.prompt : profile_status.prompt;\n}\n\nreturn [{ json: parsed }];"
+        "jsCode": "let rawText = $input.item.json.output || \"\";\nlet parsed = {};\ntry {\n  let cleaned = rawText.replace(/```json|```/gi, \"\").trim();\n  const jsonMatch = cleaned.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) cleaned = jsonMatch[0];\n  parsed = JSON.parse(cleaned);\n  if (typeof parsed.profile_updated === \"string\") parsed.profile_updated = parsed.profile_updated.toLowerCase() === \"true\";\n  if (parsed.profile_updated === undefined) parsed.profile_updated = !!parsed.master_profile;\n\n  const existingRow = $(\"Supabase Fetch\").item.json;\n  const isNewUser = !existingRow || !existingRow.telegram_id;\n  const hasProfileData = parsed.master_profile && typeof parsed.master_profile === \"object\" && Object.keys(parsed.master_profile).length > 0;\n  if (isNewUser && hasProfileData) parsed.profile_updated = true;\n} catch (e) {\n  parsed = { chat_reply: \"Sorry, I had trouble parsing that. Could you try again?\", profile_updated: false, master_profile: null };\n}\n\nconst buildStatus = (profile) => {\n  const missing = [];\n  const addMissing = (label) => { if (!missing.includes(label)) missing.push(label); };\n  const hasProfile = profile && typeof profile === \"object\";\n\n  if (!hasProfile) {\n    addMissing(\"your resume data\");\n  } else {\n    if (!profile.name || !String(profile.name).trim()) addMissing(\"your full name\");\n    const contact = profile.contact || {};\n    if (!contact.email && !contact.phone) addMissing(\"a contact email or phone number\");\n    if (!profile.summary || !String(profile.summary).trim()) addMissing(\"a short professional summary\");\n    const hasSkills = Array.isArray(profile.skills) && profile.skills.some((s) => {\n      const items = Array.isArray(s?.items) ? s.items.join(\", \") : (s?.items ?? s?.skills);\n      return items && String(items).trim();\n    });\n    if (!hasSkills) addMissing(\"your key skills\");\n    if (!Array.isArray(profile.education) || profile.education.length === 0) addMissing(\"your education details\");\n    if (!Array.isArray(profile.work_experience) || profile.work_experience.length === 0) addMissing(\"your work experience\");\n    if (!Array.isArray(profile.projects) || profile.projects.length === 0) addMissing(\"your projects\");\n  }\n\n  const isSufficient = missing.length === 0;\n  let prompt = \"\";\n  if (!isSufficient) {\n    if (!hasProfile) {\n      prompt = \"Your profile is currently empty. Please upload your resume PDF or send your professional details (starting with your full name) to establish your baseline profile.\";\n    } else {\n      prompt = \"Your profile is incomplete. Please provide your \" + missing[0] + \" next to complete your profile. You can paste the text here or upload your resume PDF.\";\n    }\n  }\n\n  return { isSufficient, missing, prompt };\n};\n\nconst rawProfile = parsed.master_profile ?? $(\"Supabase Fetch\").item.json.master_profile;\nlet profile = null;\ntry { profile = typeof rawProfile === \"string\" ? JSON.parse(rawProfile) : rawProfile; } catch (e) { profile = null; }\n\nconst profile_status = buildStatus(profile);\nparsed.profile_status = profile_status;\n\n// Only append incomplete-profile nudge when the user just updated their profile\n// (not on every query/reply while profile is still being built up)\nif (profile_status.prompt && parsed.profile_updated === true) {\n  parsed.chat_reply = parsed.chat_reply ? parsed.chat_reply + \"\\n\\n\" + profile_status.prompt : profile_status.prompt;\n}\n\nreturn [{ json: parsed }];"
       },
       "id": "eeb1b2fd-f904-425f-8ad4-b626a9e99308",
       "name": "Parse JSON",
@@ -910,7 +970,7 @@
     },
     {
       "parameters": {
-        "command": "=base64 -w 0 /tmp/resume_{{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}.pdf && rm -f /tmp/resume_{{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}.tex /tmp/resume_{{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}.pdf /tmp/resume_{{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}.log /tmp/resume_{{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}.aux /tmp/compile_{{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}.log"
+        "command": "=base64 -w 0 /tmp/resume_{{ $execution.id }}.pdf && rm -f /tmp/resume_{{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}.tex /tmp/resume_{{ $execution.id }}.pdf /tmp/resume_{{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}.log /tmp/resume_{{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}.aux /tmp/compile_{{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}.log"
       },
       "type": "n8n-nodes-base.ssh",
       "typeVersion": 1,
@@ -1406,7 +1466,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const msg = ($('Telegram Trigger').item.json.message && $('Telegram Trigger').item.json.message.text) ? $('Telegram Trigger').item.json.message.text : '';\nconst jdText = msg.replace(/^\\/coverletter\\s*/i, '').trim();\nconst rawTailored = $('Supabase Fetch').item.json.tailored_profile;\nconst rawMaster = $('Supabase Fetch').item.json.master_profile;\nif (jdText) {\n  if (!rawMaster) {\n    return [{ json: { success: false, text: \"📭 No profile found. Please upload your resume PDF first before generating a cover letter!\" } }];\n  }\n  const profile = typeof rawMaster === 'string' ? JSON.parse(rawMaster) : rawMaster;\n  return [{ json: { success: true, profile, jd: jdText, mode: 'jd' } }];\n} else {\n  const raw = rawTailored || rawMaster;\n  if (!raw) {\n    return [{ json: { success: false, text: \"📭 No profile found. Please upload your resume PDF or run /optimize first before generating a cover letter!\" } }];\n  }\n  const profile = typeof raw === 'string' ? JSON.parse(raw) : raw;\n  const mode = rawTailored ? 'tailored' : 'master';\n  return [{ json: { success: true, profile, jd: null, mode } }];\n}"
+        "jsCode": "const msg = ($('Telegram Trigger').item.json.message && $('Telegram Trigger').item.json.message.text) ? $('Telegram Trigger').item.json.message.text : '';\nconst jdText = msg.replace(/^\\/coverletter\\s*/i, '').trim();\n// Require at least 80 chars — single words/phrases are not a real JD\nconst hasValidJd = jdText.length >= 80;\nconst rawTailored = $('Supabase Fetch').item.json.tailored_profile;\nconst rawMaster = $('Supabase Fetch').item.json.master_profile;\nif (hasValidJd) {\n  if (!rawMaster) {\n    return [{ json: { success: false, text: \"📭 No profile found. Please upload your resume PDF first before generating a cover letter!\" } }];\n  }\n  const profile = typeof rawMaster === 'string' ? JSON.parse(rawMaster) : rawMaster;\n  return [{ json: { success: true, profile, jd: jdText, mode: 'jd' } }];\n} else {\n  const raw = rawTailored || rawMaster;\n  if (!raw) {\n    return [{ json: { success: false, text: \"📭 No profile found. Please upload your resume PDF or run /optimize first before generating a cover letter!\" } }];\n  }\n  const profile = typeof raw === 'string' ? JSON.parse(raw) : raw;\n  const mode = rawTailored ? 'tailored' : 'master';\n  return [{ json: { success: true, profile, jd: null, mode } }];\n}"
       },
       "id": "65527320-d8fd-4459-961b-3eadc881bb55",
       "name": "Check Cover Letter Profile",
@@ -1946,7 +2006,7 @@
     },
     {
       "parameters": {
-        "jsCode": "let rawText = $input.item.json.output || \"\";\nlet parsed = {};\ntry {\n  let cleaned = rawText.replace(/```json|```/gi, \"\").trim();\n  const jsonMatch = cleaned.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) cleaned = jsonMatch[0];\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  parsed = { intent: \"UPDATE\" };\n}\nreturn [{ json: parsed }];"
+        "jsCode": "// ── Heuristic-first intent classification ─────────────────────────────────\n// Run a fast local check before trusting the LLM classifier output.\n// If the message clearly looks like a QUERY, short-circuit to QUERY.\n// If it clearly looks like an UPDATE, short-circuit to UPDATE.\n// Only fall back to the LLM's answer when neither heuristic matches.\n\nconst msg = ($('Telegram Trigger').first().json.message?.text || '').trim().toLowerCase();\n\nconst queryStarters = [\n  'what', 'which', 'who', 'where', 'when', 'how many', 'how much',\n  'do i have', 'did i', 'is my', 'are my', 'can you tell', 'show me',\n  'list my', 'what are', 'what is', 'what was', 'what were',\n  'tell me', 'give me', 'find my', 'check my', 'do i',\n];\n\nconst updateStarters = [\n  'add', 'update', 'change', 'set', 'remove', 'delete', 'fix', 'correct',\n  'edit', 'replace', 'my new', 'i have', 'i got', 'i just', 'i completed',\n  'i finished', 'i am working', 'i joined', 'i started', 'i built',\n  'i created', 'i made', 'i earned', 'i received', 'my current',\n];\n\nconst isLikelyQuery  = queryStarters.some(s  => msg.startsWith(s) || msg.includes(' ' + s + ' '));\nconst isLikelyUpdate = updateStarters.some(s => msg.startsWith(s));\n\n// Heuristic: QUERY wins if no update-starter detected; UPDATE wins if explicit update language\nlet heuristicIntent = null;\nif (isLikelyQuery && !isLikelyUpdate)  heuristicIntent = 'QUERY';\nif (isLikelyUpdate && !isLikelyQuery)  heuristicIntent = 'UPDATE';\n\n// Parse the LLM's output regardless (it's already been called upstream)\nlet rawText = $input.item.json.output || '';\nlet parsed = {};\ntry {\n  let cleaned = rawText.replace(/```json|```/gi, '').trim();\n  const jsonMatch = cleaned.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) cleaned = jsonMatch[0];\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  parsed = { intent: 'UPDATE' };\n}\n\n// Apply heuristic override when confident\nif (heuristicIntent) {\n  parsed.intent = heuristicIntent;\n}\n\n// Sanitise: intent must be either QUERY or UPDATE\nif (!['QUERY', 'UPDATE'].includes(parsed.intent)) {\n  parsed.intent = 'UPDATE';\n}\n\nreturn [{ json: parsed }];"
       },
       "id": "f5a6a912-aa87-41b2-9a1e-f27491e4d897",
       "name": "Parse Intent",
@@ -2186,6 +2246,74 @@
         30896,
         45776
       ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.success === true && !!$json.tex_b64 }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "fix02-1111-2222-3333-444455556666",
+      "name": "Has LaTeX Content?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        29296,
+        46336
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}",
+        "text": "={{ $json.text || '📭 No profile data found to generate a PDF.' }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "fix02-7777-8888-9999-aaaabbbbcccc",
+      "name": "Send LaTeX Error Reply",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        29296,
+        46560
+      ],
+      "webhookId": "f2e3d4c5-b6a7-8901-fedc-ba0987654321",
+      "credentials": {
+        "telegramApi": {
+          "id": "C4WFoCaBCTYvtSS5",
+          "name": "AI Agent Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}",
+        "text": "Please send a text message or a PDF document. I cannot process photos, stickers, voice notes, or other media.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "fix04-9999-8888-7777-666655554444",
+      "name": "Send Media Guard Reply",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        28864,
+        45696
+      ],
+      "webhookId": "d4c5b6a7-f8e9-0123-dcba-987654321098",
+      "credentials": {
+        "telegramApi": {
+          "id": "C4WFoCaBCTYvtSS5",
+          "name": "AI Agent Bot"
+        }
+      }
     }
   ],
   "connections": {
@@ -2248,6 +2376,13 @@
         [
           {
             "node": "Format Profile View",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Media Guard Reply",
             "type": "main",
             "index": 0
           }
@@ -2325,7 +2460,7 @@
       "main": [
         [
           {
-            "node": "Write LaTeX File",
+            "node": "Has LaTeX Content?",
             "type": "main",
             "index": 0
           }
@@ -3038,6 +3173,24 @@
         [
           {
             "node": "Profile Updated?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has LaTeX Content?": {
+      "main": [
+        [
+          {
+            "node": "Write LaTeX File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send LaTeX Error Reply",
             "type": "main",
             "index": 0
           }
