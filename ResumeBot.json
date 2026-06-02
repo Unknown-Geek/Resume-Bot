@@ -261,6 +261,15 @@
                     "id": "cfa85e23-8929-4422-a8db-f90f63e26af1"
                   },
                   {
+                    "leftValue": "={{ $('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.data : $('Telegram Trigger').item.json.message.text }}",
+                    "rightValue": "/analyze",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notStartsWith"
+                    },
+                    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                  },
+                  {
                     "leftValue": "={{ (() => { const msg = $('Telegram Trigger').item.json.message?.text || ''; const text = msg.trim().toLowerCase(); if (!text) return false; const greetings = ['hi','hlo','oi','hoi','yo', 'hello', 'hey', 'hiya', 'good morning', 'good afternoon', 'good evening']; return greetings.some(g => text === g || text.startsWith(g + ' ')); })() }}",
                     "rightValue": false,
                     "operator": {
@@ -463,6 +472,39 @@
               },
               "renameOutput": true,
               "outputKey": "coverletter"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.data : $('Telegram Trigger').item.json.message.text }}",
+                    "rightValue": "/analyze",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+                  },
+                  {
+                    "leftValue": "={{ $('Assess Master Profile').item.json.profile_status.isSufficient }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    },
+                    "id": "c3d4e5f6-a7b8-9012-cdef-123456789012"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "analyze"
             }
           ]
         },
@@ -1114,7 +1156,7 @@
     {
       "parameters": {
         "chatId": "={{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}",
-        "text": "<b>Welcome to ResumeBot</b>\n\nResumeBot manages your professional profile, allowing you to update your information through natural conversation and generate tailored, ATS-friendly PDF resumes and cover letters for specific job descriptions.\n\n<b>How it works:</b>\n\n1. <b>Upload Resume:</b> Send your current resume as a PDF. The bot will parse the text and establish your baseline <b>Master Profile</b>.\n2. <b>Conversational Updates:</b> Update your details at any time by messaging naturally (e.g., <i>\"I just completed a Python certification\"</i>).\n3. <b>Target a Job:</b> Use <code>/optimize [paste job description]</code> to generate a temporary <b>Tailored Profile</b> optimized for that role.\n\n<b>Command Menu:</b>\n\n<code>/view</code> — Preview your master profile\n<code>/download</code> — Download your master resume as a PDF\n<code>/optimize [JD]</code> — Tailor your profile to a job description\n<code>/viewOptimized</code> — Preview your tailored profile\n<code>/downloadOptimized</code> — Download your tailored resume as a PDF\n<code>/coverletter</code> — Download your tailored cover letter as a PDF\n<code>/start</code> — View this menu again\n\n<i>Note: Running <code>/optimize</code> only modifies a temporary profile for your current application; your Master Profile is always preserved.</i>",
+        "text": "<b>Welcome to ResumeBot</b>\n\nResumeBot manages your professional profile, allowing you to update your information through natural conversation and generate tailored, ATS-friendly PDF resumes and cover letters for specific job descriptions.\n\n<b>How it works:</b>\n\n1. <b>Upload Resume:</b> Send your current resume as a PDF. The bot will parse the text and establish your baseline <b>Master Profile</b>.\n2. <b>Conversational Updates:</b> Update your details at any time by messaging naturally (e.g., <i>\"I just completed a Python certification\"</i>).\n3. <b>Target a Job:</b> Use <code>/optimize [paste job description]</code> to generate a temporary <b>Tailored Profile</b> optimized for that role.\n\n<b>Command Menu:</b>\n\n<code>/view</code> — Preview your master profile\n<code>/download</code> — Download your master resume as a PDF\n<code>/optimize [JD]</code> — Tailor your profile to a job description\n<code>/viewOptimized</code> — Preview your tailored profile\n<code>/downloadOptimized</code> — Download your tailored resume as a PDF\n<code>/coverletter</code> — Download your tailored cover letter as a PDF\n<code>/analyze [JD]</code> — ATS keyword gap analysis against a job description\n<code>/start</code> — View this menu again\n\n<i>Note: Running <code>/optimize</code> only modifies a temporary profile for your current application; your Master Profile is always preserved.</i>",
         "replyMarkup": "inlineKeyboard",
         "inlineKeyboard": {
           "rows": [
@@ -2033,6 +2075,104 @@
         30080,
         45472
       ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}",
+        "text": "Analyzing your profile against the job description. This will take a moment...",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "d4e5f6a7-b8c9-0123-defa-234567890123",
+      "name": "Send Analyze Wait Msg",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        28864,
+        48200
+      ],
+      "webhookId": "f1e2d3c4-b5a6-7890-fedc-ba9876543210",
+      "credentials": {
+        "telegramApi": {
+          "id": "C4WFoCaBCTYvtSS5",
+          "name": "AI Agent Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const msg = $('Telegram Trigger').first().json.message.text || '';\nconst jd = msg.replace(/^\\/analyze\\s*/i, '').trim();\n\nif (!jd) {\n  return [{ json: {\n    profileText: '',\n    jdText: '',\n    error: 'NO_JD'\n  }}];\n}\n\nconst raw = $('Supabase Fetch').first().json.master_profile;\nif (!raw) {\n  return [{ json: {\n    profileText: '',\n    jdText: jd,\n    error: 'NO_PROFILE'\n  }}];\n}\n\nlet p;\ntry { p = typeof raw === 'string' ? JSON.parse(raw) : raw; }\ncatch(e) { return [{ json: { profileText: '', jdText: jd, error: 'PARSE_ERROR' } }]; }\n\n// Build a compact plain-text representation of the profile\nlet profile = '';\nif (p.name)    profile += 'Name: ' + p.name + '\\n';\nif (p.tagline) profile += 'Tagline: ' + p.tagline + '\\n';\nif (p.summary) profile += 'Summary: ' + p.summary + '\\n';\n\nif (p.skills && p.skills.length > 0) {\n  profile += '\\nSkills:\\n';\n  p.skills.forEach(s => {\n    const cat = s.category || s.name || 'General';\n    const items = Array.isArray(s.items) ? s.items.join(', ') : (s.items || '');\n    if (items) profile += '  - ' + cat + ': ' + items + '\\n';\n  });\n}\n\nif (p.work_experience && p.work_experience.length > 0) {\n  profile += '\\nWork Experience:\\n';\n  p.work_experience.forEach(w => {\n    profile += '  - ' + (w.title || '') + ' at ' + (w.company || '') + '\\n';\n    if (w.bullet_points && w.bullet_points.length > 0)\n      w.bullet_points.forEach(b => profile += '    * ' + b + '\\n');\n  });\n}\n\nif (p.projects && p.projects.length > 0) {\n  profile += '\\nProjects:\\n';\n  p.projects.forEach(proj => {\n    profile += '  - ' + (proj.name || '');\n    if (proj.tech_stack) profile += ' (' + proj.tech_stack + ')';\n    profile += '\\n';\n    if (proj.bullet_points && proj.bullet_points.length > 0)\n      proj.bullet_points.forEach(b => profile += '    * ' + b + '\\n');\n  });\n}\n\nif (p.certifications && p.certifications.length > 0) {\n  profile += '\\nCertifications:\\n';\n  p.certifications.forEach(c => {\n    profile += '  - ' + (c.name || '') + ' by ' + (c.issuer || '') + '\\n';\n  });\n}\n\nif (p.education && p.education.length > 0) {\n  profile += '\\nEducation:\\n';\n  p.education.forEach(e => {\n    profile += '  - ' + (e.degree || '') + ' from ' + (e.institution || '') + '\\n';\n  });\n}\n\nreturn [{ json: { profileText: profile.trim(), jdText: jd, error: null } }];"
+      },
+      "id": "e5f6a7b8-c9d0-1234-efab-345678901234",
+      "name": "Format ATS Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        29184,
+        48200
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.error === 'NO_JD' ? 'No job description provided.' : ($json.error === 'NO_PROFILE' ? 'No profile found.' : 'Analyze the profile against the job description and return the ATS gap analysis.') }}",
+        "options": {
+          "systemMessage": "=You are an expert ATS (Applicant Tracking System) analyst and career coach. You will receive a candidate's profile and a job description. Your job is to:\n\n1. Calculate an overall ATS match percentage (0-100%) based on keyword and skill alignment.\n2. List the hard/technical skills mentioned in the JD that are MISSING from the profile.\n3. List the soft skills or competencies mentioned in the JD that are MISSING from the profile.\n4. List the keywords and buzzwords from the JD that should appear in the resume.\n5. Give 3 to 5 specific, actionable recommendations to improve the match score.\n\n[CANDIDATE PROFILE]\n{{ $json.profileText }}\n\n[JOB DESCRIPTION]\n{{ $json.jdText }}\n\n[RULES]\n- Be direct, honest, and concise. No filler.\n- If the profile text is empty, say so.\n- Use plain text only. No JSON. No markdown headers with #.\n- Structure your response exactly like this:\n\nMatch Score: [X%]\n\nMissing Hard Skills:\n- [skill 1]\n- [skill 2]\n\nMissing Soft Skills / Competencies:\n- [skill 1]\n\nKeywords to Add:\n- [keyword 1]\n- [keyword 2]\n\nRecommendations:\n1. [recommendation 1]\n2. [recommendation 2]\n\n[TONE]\n- Direct, calm, professional voice.\n- No em dashes, no en dashes.\n- Short sentences.\n- Do not invent information not present in the profile or JD."
+        }
+      },
+      "id": "f6a7b8c9-d0e1-2345-fabc-456789012345",
+      "name": "ATS Gap Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        29504,
+        48200
+      ]
+    },
+    {
+      "parameters": {
+        "model": "rnj-1:8b",
+        "options": {}
+      },
+      "id": "a7b8c9d0-e1f2-3456-abcd-567890123456",
+      "name": "Ollama ATS Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        29504,
+        48400
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "ULmeiabvCrdrvhgq",
+          "name": "Ollama API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "b8c9d0e1-f2a3-4567-bcde-678901234567",
+      "name": "Send ATS Reply",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        29824,
+        48200
+      ],
+      "webhookId": "e2d3c4b5-a6f7-8901-edcb-a98765432109",
+      "credentials": {
+        "telegramApi": {
+          "id": "C4WFoCaBCTYvtSS5",
+          "name": "AI Agent Bot"
+        }
+      }
     }
   ],
   "connections": {
@@ -2144,6 +2284,13 @@
         [
           {
             "node": "Check Cover Letter Profile",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Analyze Wait Msg",
             "type": "main",
             "index": 0
           }
@@ -2823,6 +2970,50 @@
         [
           {
             "node": "Query Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Analyze Wait Msg": {
+      "main": [
+        [
+          {
+            "node": "Format ATS Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format ATS Context": {
+      "main": [
+        [
+          {
+            "node": "ATS Gap Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama ATS Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "ATS Gap Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ATS Gap Agent": {
+      "main": [
+        [
+          {
+            "node": "Send ATS Reply",
             "type": "main",
             "index": 0
           }
