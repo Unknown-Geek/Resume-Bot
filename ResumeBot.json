@@ -2173,6 +2173,19 @@
           "name": "AI Agent Bot"
         }
       }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Safe Profile Merge ──────────────────────────────────────────────────────\n// Guard against the AI returning a partial/wiped profile.\n// We deep-merge the AI's master_profile with what's actually in Supabase,\n// so no field can be silently erased by an incomplete LLM response.\n\nconst aiData = $input.item.json;\nconst aiProfile = aiData.master_profile;\n\n// Fetch existing profile from Supabase\nconst rawExisting = $('Supabase Fetch').first().json.master_profile;\nlet existing = {};\ntry {\n  existing = rawExisting\n    ? (typeof rawExisting === 'string' ? JSON.parse(rawExisting) : rawExisting)\n    : {};\n} catch (e) {\n  existing = {};\n}\n\n// If AI returned no profile or an empty object, keep existing and bail early\nif (!aiProfile || typeof aiProfile !== 'object' || Object.keys(aiProfile).length === 0) {\n  return [{ json: { ...aiData, master_profile: existing } }];\n}\n\n// ── Field-by-field merge ────────────────────────────────────────────────────\nconst merged = JSON.parse(JSON.stringify(existing)); // deep clone of existing\n\n// Scalar fields: AI value wins only when it is a non-empty, non-whitespace string\nconst scalars = ['name', 'tagline', 'summary'];\nfor (const field of scalars) {\n  if (aiProfile[field] != null && String(aiProfile[field]).trim() !== '') {\n    merged[field] = aiProfile[field];\n  }\n}\n\n// Contact sub-fields: merge at the sub-field level\nif (aiProfile.contact && typeof aiProfile.contact === 'object') {\n  merged.contact = merged.contact || {};\n  for (const [key, val] of Object.entries(aiProfile.contact)) {\n    if (val != null && String(val).trim() !== '') {\n      merged.contact[key] = val;\n    }\n  }\n}\n\n// Array fields: AI array wins only when it contains at least one entry\n// (an empty array from the AI means \"I didn't touch this\", not \"delete it\")\nconst arrays = ['skills', 'work_experience', 'education', 'projects', 'certifications'];\nfor (const field of arrays) {\n  if (Array.isArray(aiProfile[field]) && aiProfile[field].length > 0) {\n    merged[field] = aiProfile[field];\n  }\n}\n\n// Pass through all other ai output fields unchanged (chat_reply, profile_updated, profile_status, etc.)\nreturn [{ json: { ...aiData, master_profile: merged } }];"
+      },
+      "id": "c9d0e1f2-a3b4-5678-cdef-789012345678",
+      "name": "Safe Profile Merge",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        30896,
+        45776
+      ]
     }
   ],
   "connections": {
@@ -2411,7 +2424,7 @@
       "main": [
         [
           {
-            "node": "Profile Updated?",
+            "node": "Safe Profile Merge",
             "type": "main",
             "index": 0
           }
@@ -3014,6 +3027,17 @@
         [
           {
             "node": "Send ATS Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Safe Profile Merge": {
+      "main": [
+        [
+          {
+            "node": "Profile Updated?",
             "type": "main",
             "index": 0
           }
