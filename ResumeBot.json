@@ -1960,6 +1960,47 @@
           "name": "AI Agent Bot"
         }
       }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "options": {
+          "systemMessage": "You are an expert AI Resume assistant. Your job is to answer the user's question about their professional profile using ONLY their saved master profile context.\n\n[USER CONTEXT FROM DATABASE]\n{{ $('Supabase Fetch').item.json.master_profile ? JSON.stringify($('Supabase Fetch').item.json.master_profile) : 'NO_PROFILE' }}\n\n[STRICT RULES]\n1. Answer the question directly, accurately, and concisely in a professional, human voice.\n2. Do not invent or assume any facts. If the information is not present in the master profile, explain clearly and politely that it is missing.\n\n[HUMAN WRITING STYLE & TONE RULES (CRITICAL ANTI-AI CONSTRAINTS)]\n- Your final output must contain absolutely no em dashes (—), en dashes (–), or double hyphens (--, ---) inside text sentences.\n- Avoid passive voice; use clear, direct active voice."
+        }
+      },
+      "id": "75eb4031-d947-4474-81bc-82e25124535f",
+      "name": "Query Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        33700,
+        39600
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "e4dfba0b-795f-4bbf-9e17-665a470a1478",
+      "name": "Send Query Reply",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        33950,
+        39600
+      ],
+      "webhookId": "4c259a21-b8ae-4725-bfd8-fad039f14906",
+      "credentials": {
+        "telegramApi": {
+          "id": "C4WFoCaBCTYvtSS5",
+          "name": "AI Agent Bot"
+        }
+      }
     }
   ],
   "connections": {
@@ -2668,6 +2709,11 @@
             "node": "Intent Classifier",
             "type": "ai_languageModel",
             "index": 0
+          },
+          {
+            "node": "Query Agent",
+            "type": "ai_languageModel",
+            "index": 0
           }
         ]
       ]
@@ -2716,11 +2762,27 @@
       "main": [
         [
           {
-            "node": "Format Chat Prompt",
+            "node": "Query Agent",
             "type": "main",
             "index": 0
           }
         ]
+      ]
+    },
+    "Query Agent": {
+      "main": [
+        [
+          {
+            "node": "Send Query Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Query Reply": {
+      "main": [
+        []
       ]
     }
   },
