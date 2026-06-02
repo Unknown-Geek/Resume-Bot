@@ -42,7 +42,7 @@
         }
       },
       "id": "f78f05ac-219f-4077-b418-5abd5ea1d15b",
-      "name": "Supabase Fetch",
+      "name": "Supabase Fetch by ID",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
@@ -770,6 +770,10 @@
             {
               "fieldId": "master_profile",
               "fieldValue": "={{ JSON.stringify($('Parse JSON').item.json.master_profile) }}"
+            },
+            {
+              "fieldId": "telegram_username",
+              "fieldValue": "={{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.from.username : $('Telegram Trigger').item.json.message.from.username) }}"
             }
           ]
         }
@@ -801,6 +805,10 @@
             {
               "fieldId": "master_profile",
               "fieldValue": "={{ JSON.stringify($('Parse JSON').item.json.master_profile) }}"
+            },
+            {
+              "fieldId": "telegram_username",
+              "fieldValue": "={{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.from.username : $('Telegram Trigger').item.json.message.from.username) }}"
             }
           ]
         }
@@ -1736,6 +1744,111 @@
           "name": "AI Agent Bot"
         }
       }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "Profiles",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_username",
+              "condition": "eq",
+              "keyValue": "={{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.from.username : $('Telegram Trigger').item.json.message.from.username) }}"
+            }
+          ]
+        }
+      },
+      "id": "ecaf849a-8ed4-4fbc-bd18-b131842d271d",
+      "name": "Supabase Fetch by Username",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        25696,
+        35464
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "nc9cyvCFuivX90d4",
+          "name": "Resume Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const byId = $('Supabase Fetch by ID').item.json;\nconst byUsername = $('Supabase Fetch by Username').item.json;\n\nconst foundById = byId && byId.telegram_id;\nconst foundByUsername = byUsername && byUsername.telegram_id;\n\nconst found = foundById ? byId : (foundByUsername ? byUsername : {});\nreturn [{ json: found }];"
+      },
+      "id": "541f653a-920f-4f9e-a44d-486c9b4f9d55",
+      "name": "Supabase Fetch",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        25824,
+        35264
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $('Supabase Fetch by ID').item.json.telegram_id }}",
+              "operation": "isEmpty"
+            },
+            {
+              "value1": "={{ $('Supabase Fetch by Username').item.json.telegram_id }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "5320a63d-2036-47c6-a498-394a85b84667",
+      "name": "Check Migration Needed",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        25824,
+        35464
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "Profiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_username",
+              "condition": "eq",
+              "keyValue": "={{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.from.username : $('Telegram Trigger').item.json.message.from.username) }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "telegram_id",
+              "fieldValue": "={{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}"
+            }
+          ]
+        }
+      },
+      "id": "2534215c-507d-4116-b94c-9ea790440c72",
+      "name": "Supabase Migrate ID",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        25952,
+        35464
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "nc9cyvCFuivX90d4",
+          "name": "Resume Bot"
+        }
+      }
     }
   ],
   "connections": {
@@ -1743,18 +1856,7 @@
       "main": [
         [
           {
-            "node": "Supabase Fetch",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Supabase Fetch": {
-      "main": [
-        [
-          {
-            "node": "Assess Master Profile",
+            "node": "Supabase Fetch by ID",
             "type": "main",
             "index": 0
           }
@@ -2369,6 +2471,68 @@
         [
           {
             "node": "Telegram Chat Reply (No Buttons)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Fetch by ID": {
+      "main": [
+        [
+          {
+            "node": "Supabase Fetch by Username",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Fetch by Username": {
+      "main": [
+        [
+          {
+            "node": "Supabase Fetch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Fetch": {
+      "main": [
+        [
+          {
+            "node": "Check Migration Needed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Migration Needed": {
+      "main": [
+        [
+          {
+            "node": "Supabase Migrate ID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Assess Master Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Migrate ID": {
+      "main": [
+        [
+          {
+            "node": "Assess Master Profile",
             "type": "main",
             "index": 0
           }
