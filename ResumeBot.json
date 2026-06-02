@@ -1192,7 +1192,7 @@
     {
       "parameters": {
         "chatId": "={{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}",
-        "text": "Hang on. I'm updating your profile. This might take a few seconds.",
+        "text": "={{ (() => {\n  const text = ($('Telegram Trigger').item.json.message?.text || '').trim().toLowerCase();\n  const isQuery = text.includes('?') || \n                  /\\b(what|who|where|when|how|which|show|tell|get|is|does|do|can|did|are|was|were)\\b/.test(text) ||\n                  text.includes('my name') ||\n                  text.includes('my profile') ||\n                  text.includes('my resume') ||\n                  text.includes('my mark') ||\n                  text.includes('my grade') ||\n                  text.includes('my score') ||\n                  text.includes('my gpa');\n  return isQuery \n    ? \"Reviewing your profile details...\" \n    : \"Hang on. I'm updating your profile. This might take a few seconds.\";\n})() }}",
         "additionalFields": {
           "appendAttribution": false,
           "disable_notification": true
