@@ -141,7 +141,7 @@
                 },
                 "conditions": [
                   {
-                    "leftValue": "={{ (() => { const msg = $('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.data : ($('Telegram Trigger').item.json.message?.text || ''); const text = msg.trim(); return !!text && text.startsWith('/') && !$('Assess Master Profile').item.json.profile_status.isSufficient; })() }}",
+                    "leftValue": "={{ (() => { const msg = $('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.data : ($('Telegram Trigger').item.json.message?.text || ''); const text = msg.trim(); return !!text && text.startsWith('/') && text !== '/view' && !$('Assess Master Profile').item.json.profile_status.isSufficient; })() }}",
                     "rightValue": true,
                     "operator": {
                       "type": "boolean",
@@ -172,15 +172,6 @@
                       "operation": "equals"
                     },
                     "id": "2f0e7dfa-4ab2-428b-8f2d-fb59f66dc905"
-                  },
-                  {
-                    "leftValue": "={{ $('Assess Master Profile').item.json.profile_status.isSufficient }}",
-                    "rightValue": true,
-                    "operator": {
-                      "type": "boolean",
-                      "operation": "true"
-                    },
-                    "id": "f809e446-61cd-4dc9-8c4d-0ab70cd36388"
                   }
                 ],
                 "combinator": "and"
