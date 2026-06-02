@@ -1840,6 +1840,30 @@
           "name": "Resume Bot"
         }
       }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ ($('Telegram Trigger').item.json.callback_query ? $('Telegram Trigger').item.json.callback_query.message.chat.id : $('Telegram Trigger').item.json.message.chat.id) }}",
+        "text": "Received your resume PDF! 📄 I am now extracting, analyzing, and structuring your profile details. This will take a few seconds...",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "e44b82a2-6ce9-4724-9835-8d371401e1c0",
+      "name": "Send PDF Wait Msg",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        32800,
+        40300
+      ],
+      "webhookId": "594eca53-6f4d-4c00-9966-363b51ca8643",
+      "credentials": {
+        "telegramApi": {
+          "id": "C4WFoCaBCTYvtSS5",
+          "name": "AI Agent Bot"
+        }
+      }
     }
   ],
   "connections": {
@@ -1929,7 +1953,7 @@
         ],
         [
           {
-            "node": "Reattach Binary",
+            "node": "Send PDF Wait Msg",
             "type": "main",
             "index": 0
           }
@@ -2524,6 +2548,17 @@
         [
           {
             "node": "Assess Master Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send PDF Wait Msg": {
+      "main": [
+        [
+          {
+            "node": "Reattach Binary",
             "type": "main",
             "index": 0
           }
