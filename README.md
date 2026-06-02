@@ -40,6 +40,10 @@ Send `/coverletter` after running `/optimize`. The bot dynamically pulls your ta
 ### Profile Preview (Segmented Messaging)
 View your full profile in formatted text directly in the Telegram chat before exporting, for both the master and tailored versions.
 - **Smart Button Attachment**: If your profile exceeds Telegram's 4,096-character limit, the preview is safely split into multiple message segments. The bot dynamically tags the final chunk and attaches the "Download PDF" inline keyboard button **only to the last segment**, providing a clean and professional user interface.
+- **Clean Chat Previews**: The bot automatically disables Telegram's web page link previews across all text messages. This prevents massive image thumbnails (like GitHub profile pictures) from cluttering the chat when displaying your URLs. It also intelligently formats links as `Display Text (URL)` when both are present.
+
+### Smart Link Extraction
+The bot utilizes robust Regex to automatically detect naked domains (e.g., `techsprouts.netlify.app`, `github.com`) even if you forget to include the `http://` protocol. It dynamically injects `https://` under the hood before compiling the LaTeX PDF to prevent broken hyper-references, ensuring all contact links, live demos, and GitHub repositories are perfectly clickable.
 
 ---
 
@@ -75,6 +79,7 @@ The bot is implemented as a single n8n workflow exported as `ResumeBot.json`. Th
   - **Early Evaluation Route**: The router prioritizes `info` (`/start`), `greeting`, and `profileIncomplete` branches *first*.
   - **Greeting Interceptor**: Standard conversational greetings (e.g., "hi", "hello") are intercepted early and handled with direct friendly responses instead of trigger-heavy profile warnings.
   - **Sufficiency Gatekeeper**: No command works if the user's master profile is empty. If data is insufficient, the bot prompts the user specifically for the missing details (e.g., education, work history) and suppresses inline keyboard export buttons until a complete master profile is ingested.
+- **Heuristic-First Intent Classifier**: Before attempting a database update, the bot uses a fast Regex heuristic to check if the user is asking a question (e.g. "what is my GPA?"). If ambiguous, it falls back to an AI Classifier Model to definitively route the message to either the Query branch or the Update branch.
 
 ### Profile Branches
 - **PDF Upload Branch**: Detects when a document is attached, extracts PDF text, formats a prompt, and sends it to the AI Agent for parsing.
@@ -83,9 +88,11 @@ The bot is implemented as a single n8n workflow exported as `ResumeBot.json`. Th
 - **View Branch**: Formats and returns the master profile as Telegram-formatted text.
 
 ### AI Agents (Ollama)
-All AI inference runs locally via Ollama using the `qwen3-coder:480b` model served through an OpenAI-compatible API endpoint.
+All AI inference runs locally via Ollama using the `qwen3-coder:480b` model served through an OpenAI-compatible API endpoint. (The Intent Classifier additionally utilizes `rnj-1:8b` for fast, lightweight classification).
 
+- **Intent Classifier Agent**: Evaluates user messages to explicitly route between database updates ("UPDATE") and read-only profile questions ("QUERY").
 - **AI Agent** (main): Handles both PDF parsing and conversational updates. Given the current profile and the user's message, it returns a JSON object containing an updated `master_profile` and a natural language `chat_reply`.
+- **Query Agent**: Answers user questions directly by reading the stored profile without modifying any data.
 - **AI JD Agent**: Receives the user's master profile and a job description. Returns a `tailored_profile` with rewritten content and a `chat_reply` summarizing optimizations and skill gaps.
 - **ATS Gap Agent**: Analyzes a job description against the master profile to output a plain-text breakdown of missing hard/soft skills and actionable recommendations.
 - **AI Fix LaTeX Agent**: When `pdflatex` compilation fails, this agent receives the compile log and the original LaTeX source, fixes any errors, and returns corrected LaTeX.
