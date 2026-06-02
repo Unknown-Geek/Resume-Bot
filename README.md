@@ -170,6 +170,32 @@ In both modes the output is a compiled PDF sent directly to the chat, using the 
 
 ---
 
+## Humanizer (Anti-AI Writing Style Rules)
+
+To prevent generated resumes, profile summaries, experience descriptions, and cover letters from sounding artificial, formulaic, or obviously machine-generated, the generative LLM agents adhere to strict **Humanizer Constraints** modeled on Wikipedia's *WikiProject AI Cleanup* guidelines. 
+
+These rules mathematically filter out the primary indicators of LLM-generated text:
+
+### 1. Hard Punctuation Constraints
+- **Em Dash & Double Hyphen Removal**: The agents are strictly prohibited from generating em dashes (`—`), en dashes (`–`), or double hyphens (`--`/`---`) within text blocks. They must structure sentences naturally using standard periods, commas, colons, or parentheses.
+
+### 2. Copula Restoration (Avoiding AI Verb Stretches)
+- **Use Simple Copulas**: The model is forbidden from using complex LLM verb replacements like *"serves as"*, *"stands as"*, *"boasts"*, *"features"*, *"offers"*, or *"marks"*. Instead, simple, direct verbs like *"is"*, *"are"*, *"has"*, or direct action verbs must be used (e.g. replacing *"stands as a leading engineer"* with *"is a leading engineer"*).
+
+### 3. AI-Code Vocabulary Blacklist
+- The agents cannot use typical high-frequency AI buzzwords, including: *delve, testament, beacon, synergy, seamless, cutting-edge, revolutionary, leverage, leveraging, transformative, meticulously, expertly, proven track record, elevate, tapestry, foster, multifaceted, catalyst, passionate, dynamically, align with, crucial, enduring, enhance, garner, highlight (verb), interplay, intricate, intricacies, key (adjective), landscape (abstract), pivotal, showcase, underscore.*
+
+### 4. Grammar and Structure Refinement
+- **No Present Participle Padding**: The model cannot tack on superficial present-participle `"-ing"` endings (e.g. *"...highlighting their expertise"*, *"...ensuring client success"*) simply to pad bullet points.
+- **Rule of Three Prevention**: Restricts forcing bullet points or lists into rigid symmetrical groups of three, allowing lists to have natural lengths.
+- **No Negative Parallelisms**: Avoids repetitive *"Not only... but also..."* constructs and clipped tailing negative fragments (*"no guessing"*).
+- **Active Voice**: Strongly favors direct active voice over passive voice.
+
+### 5. Genuine Voice & Style
+- **Grounded, Understated Tone**: Banish sycophantic chatbot filler (*"Certainly!"*, *"I hope this helps!"*) and template cover letter openings (*"I am thrilled/excited/delighted to apply..."*) in favor of a calm, grounded statement of interest.
+
+---
+
 ## Prerequisites
 
 Before setting up and importing this workflow, ensure the following are available and configured:
