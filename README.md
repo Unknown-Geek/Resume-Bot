@@ -62,6 +62,7 @@ The bot utilizes robust Regex to automatically detect naked domains (e.g., `tech
 | `/downloadOptimized` | Compile and download your tailored resume as a PDF |
 | `/coverletter` | Generate a cover letter PDF. Optionally append a job description: `/coverletter [paste JD]` |
 | `/analyze [job description]` | Run an ATS keyword gap analysis against a job description |
+| `/clear` | ⚠️ Permanently delete your entire profile from the database. The bot will prompt you to start fresh. |
 
 Any other message (including a PDF upload) is treated as a conversational update to your profile. All commands are fully case-insensitive (e.g. `/DownloadOptimized` works identically).
 
@@ -80,7 +81,7 @@ The bot is implemented as a single n8n workflow exported as `ResumeBot.json`. Th
 - **Command Router (Case-Insensitive)**: A Switch node that inspects the incoming message or callback data and routes execution gracefully regardless of user casing.
   - **Early Evaluation Route**: The router prioritizes `info` (`/start`), `greeting`, and `profileIncomplete` branches *first*.
   - **Greeting Interceptor**: Standard conversational greetings (e.g., "hi", "hello") are intercepted early and handled with direct friendly responses instead of trigger-heavy profile warnings.
-  - **Sufficiency Gatekeeper**: No command works if the user's master profile is empty. If data is insufficient, the bot prompts the user specifically for the missing details (e.g., education, work history) and suppresses inline keyboard export buttons until a complete master profile is ingested.
+  - **Sufficiency Gatekeeper**: No command works if the user's master profile is empty. If data is insufficient, the bot prompts the user specifically for the missing details (e.g., education, work history) and suppresses inline keyboard export buttons until a complete master profile is ingested. The `/clear` and `/view` commands are explicitly exempt from this gate and always execute regardless of profile state.
 - **Heuristic-First Intent Classifier**: Before attempting a database update, the bot uses a fast Regex heuristic to check if the user is asking a question (e.g. "what is my GPA?"). If ambiguous, it falls back to an AI Classifier Model to definitively route the message to either the Query branch or the Update branch.
 
 ### Profile Branches
